@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { firestore } from './_firebase';
+import { firestore } from './_firebase.js';
 
 function verifySignature(secret: string | undefined, body: string, headerSignature: string | undefined) {
   if (!secret) return true; // if not configured, skip verification (but warn in prod)

@@ -1,4 +1,4 @@
-import { firestore } from './_firebase';
+import { firestore } from './_firebase.js';
 
 const templatesSeed = [
   { id: 1, title: 'Enterprise Nexus', description: 'High-compliance protocol for global institutions.', tasks: [{ id: 1, title: 'Sign Master Service Agreement' }, { id: 2, title: 'Submit Brand Identity Assets' }, { id: 3, title: 'Configure Domain Records' }] },

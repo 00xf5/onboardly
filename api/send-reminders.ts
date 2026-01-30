@@ -1,5 +1,5 @@
-import { firestore } from './_firebase';
-import { sendReminderEmail } from './_mail';
+import { firestore } from './_firebase.js';
+import { sendReminderEmail } from './_mail.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });

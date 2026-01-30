@@ -1,4 +1,4 @@
-import { firestore } from './_firebase';
+import { firestore } from './_firebase.js';
 
 // SendGrid temporarily disabled — stubbed implementations below
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
