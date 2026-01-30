@@ -5,11 +5,11 @@
     { "src": "(.*)", "dest": "/index.html" }
   ],
   "functions": {
-    "api/**.ts": {
+    "api/**/*.ts": {
       "memory": 512,
       "maxDuration": 10
     },
-    "api/**.js": {
+    "api/**/*.js": {
       "memory": 512,
       "maxDuration": 10
     }
