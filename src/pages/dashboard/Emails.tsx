@@ -188,4 +188,4 @@ export const EmailsView = React.memo(() => {
             </Dialog>
         </div>
     );
-};
+});

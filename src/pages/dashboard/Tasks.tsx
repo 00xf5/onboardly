@@ -237,4 +237,4 @@ export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsA
             </Dialog>
         </div>
     );
-};
+});

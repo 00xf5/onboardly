@@ -164,4 +164,4 @@ export const ClientsView = React.memo(function ClientsView({
             </div>
         </div>
     );
-};
+});
