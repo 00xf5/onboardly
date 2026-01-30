@@ -22,7 +22,7 @@
 2. Stripe account and webhook secret (if you want billing):
    - STRIPE_SECRET_KEY
    - STRIPE_WEBHOOK_SECRET
-3. Email provider credentials for transactional mail (SMTP or SendGrid API key)
+3. Emailb provider credentials for transactional mail (SMTP or SendGrid API key)
 4. Vercel team/project where I can deploy or you can add environment variables in project settings:
    - Add SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, etc. as environment variables
 

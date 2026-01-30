@@ -59,9 +59,11 @@ import FlowTemplatesView from './dashboard/FlowTemplatesView';
 import VisualFlowEditorView from './dashboard/VisualFlowEditorView';
 import InsightsView from './dashboard/InsightsView';
 import WebhooksView from './dashboard/WebhooksView';
+import FlowsView from './dashboard/FlowsView';
 import ClientManageDialog from '@/components/dialogs/ClientManageDialog';
 import DashboardMetrics from '@/components/dashboard/DashboardMetrics';
 import Notifications from '@/components/dashboard/Notifications';
+import UserSegments from './dashboard/UserSegments';
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);

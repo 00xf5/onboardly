@@ -20,15 +20,15 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-10">
-            <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <Link to="/features" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               Features
-            </a>
-            <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
+            </Link>
+            <Link to="/how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               How it Works
-            </a>
-            <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
+            </Link>
+            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               Pricing
-            </a>
+            </Link>
             <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
               About
             </Link>
@@ -65,27 +65,27 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden py-6 border-t border-border/40">
             <div className="flex flex-col gap-1">
-              <a
-                href="#features"
+              <Link
+                to="/features"
                 className="px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 Features
-              </a>
-              <a
-                href="#how-it-works"
+              </Link>
+              <Link
+                to="/how-it-works"
                 className="px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 How it Works
-              </a>
-              <a
-                href="#pricing"
+              </Link>
+              <Link
+                to="/pricing"
                 className="px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
                 onClick={() => setIsOpen(false)}
               >
                 Pricing
-              </a>
+              </Link>
               <Link
                 to="/about"
                 className="px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
