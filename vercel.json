@@ -8,10 +8,6 @@
     "api/**/*.ts": {
       "memory": 512,
       "maxDuration": 10
-    },
-    "api/**/*.js": {
-      "memory": 512,
-      "maxDuration": 10
     }
   },
   "crons": []
