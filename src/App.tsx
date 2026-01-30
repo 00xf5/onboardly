@@ -9,6 +9,9 @@ const Login = React.lazy(() => import("./pages/Login"));
 const Signup = React.lazy(() => import("./pages/Signup"));
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const PublicOnboarding = React.lazy(() => import("./pages/PublicOnboarding"));
+const AboutUs = React.lazy(() => import("./pages/AboutUs"));
+const Terms = React.lazy(() => import("./pages/Terms"));
+const Privacy = React.lazy(() => import("./pages/Privacy"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -27,6 +30,9 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/:tab" element={<Dashboard />} />
             <Route path="/onboard/:id" element={<PublicOnboarding />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
