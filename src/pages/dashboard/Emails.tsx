@@ -15,41 +15,18 @@ import {
 import { Label } from "@/components/ui/label";
 
 export const EmailsView = React.memo(() => {
-    const [templates, setTemplates] = useState([
-        {
-            id: 1,
-            name: "Initial Contact",
-            subject: "Welcome to the Nexus, {client_name}",
-            trigger: "Submission",
-            openRate: "94%",
-            status: "active"
-        },
-        {
-            id: 2,
-            name: "Task Reminder",
-            subject: "Action Required: {task_name}",
-            trigger: "24h Idle",
-            openRate: "82%",
-            status: "active"
-        },
-        {
-            id: 3,
-            name: "Mission Complete",
-            subject: "Onboarding Finalized for {project_name}",
-            trigger: "Finished",
-            openRate: "98%",
-            status: "active"
-        }
-    ]);
-
-    const [transmissions, setTransmissions] = useState(() => {
-        return store.getTransmissions();
-    });
+    const [templates, setTemplates] = useState(() => store.getEmailTemplates());
+    const [transmissions, setTransmissions] = useState(() => store.getTransmissions());
 
     useEffect(() => {
-        const handler = () => setTransmissions(store.getTransmissions());
-        window.addEventListener('onboardly:transmissions:updated', handler as EventListener);
-        return () => window.removeEventListener('onboardly:transmissions:updated', handler as EventListener);
+        const transmissionsHandler = () => setTransmissions(store.getTransmissions());
+        const templatesHandler = () => setTemplates(store.getEmailTemplates());
+        window.addEventListener('onboardly:transmissions:updated', transmissionsHandler as EventListener);
+        window.addEventListener('onboardly:email_templates:updated', templatesHandler as EventListener);
+        return () => {
+            window.removeEventListener('onboardly:transmissions:updated', transmissionsHandler as EventListener);
+            window.removeEventListener('onboardly:email_templates:updated', templatesHandler as EventListener);
+        };
     }, []);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -57,16 +34,20 @@ export const EmailsView = React.memo(() => {
 
     const handleCreateTemplate = () => {
         if (!newTemplate.name) return;
-        setTemplates([...templates, {
-            id: Date.now(),
+        store.addEmailTemplate({
             ...newTemplate,
             trigger: "Manual",
             openRate: "0%",
-            status: "active"
-        }]);
+            status: "draft"
+        });
         setIsAddDialogOpen(false);
         setNewTemplate({ name: "", subject: "" });
         toast.success("Relay Synced");
+    };
+
+    const handleDeleteTemplate = (id: number | string) => {
+        store.deleteEmailTemplate(id);
+        toast.success("Relay Deleted");
     };
 
     return (
@@ -127,7 +108,7 @@ export const EmailsView = React.memo(() => {
                                     <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/20 hover:text-white" onClick={() => toast.info(`Viewing ${template.name}`)}>
                                         <Eye className="w-3.5 h-3.5" />
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/10 hover:text-red-400">
+                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-white/10 hover:text-red-400" onClick={() => handleDeleteTemplate(template.id)}>
                                         <Trash2 className="w-3.5 h-3.5" />
                                     </Button>
                                 </div>

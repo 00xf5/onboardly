@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { FixedSizeList } from 'react-window';
-import { CheckSquare, Search, Plus, MoreVertical, Calendar, User, ShieldCheck, Zap, Target, Activity, Edit3, Trash2, ChevronRight, ChevronDown, Check, X } from "lucide-react";
+import { CheckSquare, Search, Plus, MoreVertical, Calendar, User, ShieldCheck, Zap, Target, Activity, Edit3, Trash2, ChevronRight, ChevronDown, Check, X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { store } from "@/lib/store";
 import {
     Dialog,
     DialogContent,
@@ -30,46 +30,45 @@ interface TasksViewProps {
 import useDebounce from "@/hooks/use-debounce";
 
 export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsAddDialogOpen }: TasksViewProps) {
-    const [tasks, setTasks] = useState([
-        { id: 1, title: "Initialize Security Protocol", client: "Jessica Wu", due: "Immediate", completed: false, priority: "crit", description: "Establish encrypted communication channels and verify identity headers for the primary nexus node." },
-        { id: 2, title: "Validate Governance Docs", client: "Sarah Johnson", due: "2h remaining", completed: true, priority: "med", description: "Review and approve legal frameworks and compliance documentation for the Q1 initiative." },
-        { id: 3, title: "Coordinate Nexus Kickoff", client: "David Miller", due: "24h window", completed: false, priority: "high", description: "Schedule the inaugural synchronization session with all strategic partners." },
-        { id: 4, title: "Configure Global Parameters", client: "Alex Thompson", due: "Next Cycle", completed: false, priority: "low", description: "Optimize regional latency offsets and calibrate the global telemetry matrix." },
-    ]);
+    const [tasks, setTasks] = useState(() => store.getTasksForProject('default-proj'));
+    const [clients, setClients] = useState(() => store.getClients());
+
+    useEffect(() => {
+        const handler = () => {
+            setTasks(store.getTasksForProject('default-proj'));
+            setClients(store.getClients());
+        };
+        window.addEventListener('onboardly:clients:updated', handler as EventListener);
+        return () => window.removeEventListener('onboardly:clients:updated', handler as EventListener);
+    }, []);
 
     const [searchQuery, setSearchQuery] = useState("");
-    const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null);
-    const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
-    const [newTask, setNewTask] = useState({ title: "", client: "Internal", priority: "med", due: "Asap" });
+    const [expandedTaskId, setExpandedTaskId] = useState<number | string | null>(null);
+    const [newTask, setNewTask] = useState({ title: "", client: "", priority: "med", due: "Asap" });
 
     const debouncedQuery = useDebounce(searchQuery, 250);
 
     const filteredTasks = useMemo(() => tasks.filter(t =>
         t.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
-        t.client.toLowerCase().includes(debouncedQuery.toLowerCase())
+        t.clientName.toLowerCase().includes(debouncedQuery.toLowerCase())
     ), [tasks, debouncedQuery]);
 
-    const toggleTask = (id: number) => {
-        setTasks(prev => prev.map(t => {
-            if (t.id === id) {
-                if (!t.completed) toast.success("Nexus Objective Synchronized");
-                return { ...t, completed: !t.completed };
-            }
-            return t;
-        }));
+    const toggleTask = (clientId: number | string, taskId: number | string, completed: boolean) => {
+        store.updateClientTaskStatus(clientId, taskId, !completed);
+        toast.success("Task status updated");
     };
 
     const handleAddTask = () => {
-        if (!newTask.title) return;
-        setTasks([{
-            id: Date.now(),
-            ...newTask,
-            completed: false,
-            description: "New operational objective initialized from command center."
-        }, ...tasks]);
+        if (!newTask.title || !newTask.client) return;
+        store.addTaskToClient(newTask.client, { title: newTask.title, priority: newTask.priority, due: newTask.due, description: "New operational objective." });
         setIsAddDialogOpen(false);
-        setNewTask({ title: "", client: "Internal", priority: "med", due: "Asap" });
+        setNewTask({ title: "", client: "", priority: "med", due: "Asap" });
         toast.success("Objective Manifested");
+    };
+
+    const handleDeleteTask = (clientId: number | string, taskId: number | string) => {
+        store.deleteTaskFromClient(clientId, taskId);
+        toast.success("Objective Archived");
     };
 
     // replaced by debounced + memoized filteredTasks earlier
@@ -130,7 +129,7 @@ export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsA
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
                                             <button
-                                                onClick={() => toggleTask(task.id)}
+                                                onClick={() => toggleTask(task.clientId, task.id, task.completed)}
                                                 className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${task.completed ? 'bg-success border-success text-black' : 'border-white/10 bg-white/5 hover:border-accent'}`}
                                             >
                                                 {task.completed && <Check className="w-3 h-3" />}
@@ -164,7 +163,7 @@ export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsA
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                onClick={() => toast.info("Archiving Objective")}
+                                                onClick={() => handleDeleteTask(task.clientId, task.id)}
                                                 className="h-7 w-7 p-0 rounded-md text-white/10 hover:text-red-400"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -206,9 +205,9 @@ export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsA
                                         <SelectValue placeholder="Nexus Node" />
                                     </SelectTrigger>
                                     <SelectContent className="bg-[#1a1b23] border-white/5 text-white">
-                                        <SelectItem value="Internal">Internal</SelectItem>
-                                        <SelectItem value="Jessica Wu">Jessica Wu</SelectItem>
-                                        <SelectItem value="Sarah Johnson">Sarah Johnson</SelectItem>
+                                        {clients.map(client => (
+                                            <SelectItem key={client.id} value={String(client.id)}>{client.name}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>

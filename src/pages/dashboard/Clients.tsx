@@ -16,6 +16,7 @@ interface ClientsViewProps {
     setIsNewClientDialogOpen: (open: boolean) => void;
     getStatusIcon: (status: string) => React.ReactNode;
     getStatusLabel: (status: string) => string;
+    onManageClient?: (client: any) => void;
 }
 
 export const ClientsView = React.memo(function ClientsView({
@@ -24,7 +25,8 @@ export const ClientsView = React.memo(function ClientsView({
     setSearchQuery,
     setIsNewClientDialogOpen,
     getStatusIcon,
-    getStatusLabel
+    getStatusLabel,
+    onManageClient
 }: ClientsViewProps) {
     const debouncedQuery = useDebounce(searchQuery, 250);
 
@@ -134,8 +136,7 @@ export const ClientsView = React.memo(function ClientsView({
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => {
-                                                            const slug = (client as any).slug ? (client as any).slug : client.name.toLowerCase().replace(/\s+/g, '-');
-                                                            const url = `${window.location.origin}/onboard/${slug}`;
+                                                            const url = `${window.location.origin}/onboard/${client.slug}`;
                                                             navigator.clipboard.writeText(url);
                                                             toast.success("Sync Link Copied");
                                                         }}
@@ -147,7 +148,14 @@ export const ClientsView = React.memo(function ClientsView({
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => toast.info(`Managing ${client.name}`)}
+                                                        onClick={() => {
+                                                            if (onManageClient) {
+                                                                onManageClient(client);
+                                                            } else {
+                                                                // Fallback if no handler provided
+                                                                toast.info(`Managing ${client.name}`);
+                                                            }
+                                                        }}
                                                         className="h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white hover:bg-white/10"
                                                     >
                                                         Manage

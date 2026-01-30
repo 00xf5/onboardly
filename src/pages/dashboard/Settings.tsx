@@ -22,6 +22,8 @@ import { store } from "@/lib/store";
 
 export const SettingsView = () => {
     const [plan, setPlan] = useState(() => store.getPlan()); // free | pro
+    const [autoLockout, setAutoLockout] = useState(false);
+    const [neuralCryptography, setNeuralCryptography] = useState(true);
 
     const handleUpgrade = async () => {
         try {
@@ -130,14 +132,14 @@ export const SettingsView = () => {
                                     <p className="text-[11px] font-bold text-white">Auto-Lockout</p>
                                     <p className="text-[9px] text-white/20 uppercase tracking-tighter italic">Terminate session after 15m idle</p>
                                 </div>
-                                <Switch className="scale-75 data-[state=checked]:bg-accent" />
+                                <Switch checked={autoLockout} onCheckedChange={setAutoLockout} className="scale-75 data-[state=checked]:bg-accent" />
                             </div>
                             <div className="flex items-center justify-between pt-1">
                                 <div className="space-y-1">
                                     <p className="text-[11px] font-bold text-white">Neural Cryptography</p>
                                     <p className="text-[9px] text-white/20 uppercase tracking-tighter italic">Encrypt all partner payloads</p>
                                 </div>
-                                <Switch defaultChecked className="scale-75 data-[state=checked]:bg-accent" />
+                                <Switch checked={neuralCryptography} onCheckedChange={setNeuralCryptography} className="scale-75 data-[state=checked]:bg-accent" />
                             </div>
                         </div>
                     </section>
@@ -147,14 +149,24 @@ export const SettingsView = () => {
                 <div className="lg:col-span-4 space-y-4">
                     <div className="p-6 bg-[#1a1b23]/40 rounded-2xl border border-white/5">
                         <h4 className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-5">Command Gateway</h4>
-                        <div className="space-y-5">
-                            <div className="space-y-2">
-                                <Label className="text-[8px] uppercase font-black tracking-widest text-white/20 ml-1">SMTP Relay</Label>
-                                <div className="flex gap-2">
-                                    <Input placeholder="smtp.nexus.io" className="bg-white/5 h-8 text-[9px] rounded-lg border-white/5" />
-                                    <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg bg-white/5 border border-white/5 text-accent">
-                                        <ArrowUpRight className="w-3 h-3" />
-                                    </Button>
+                        <div className="space-y-6">
+                            <h2 className="text-2xl font-bold">Settings</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-white/50">JS snippet</label>
+                                    <input type="text" value="<script src='...'></script>" readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-white/50">Event schema</label>
+                                    <textarea readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1" value={JSON.stringify({ user: '...', event: '...' }, null, 2)} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-white/50">Webhook config</label>
+                                    <input type="text" value="https://..." readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-white/50">User ID mapping</label>
+                                    <input type="text" value="..." readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1" />
                                 </div>
                             </div>
                             <div className="space-y-2">

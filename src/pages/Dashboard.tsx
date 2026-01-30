@@ -47,18 +47,33 @@ import { toast } from "sonner";
 import { navItems, initialClients } from "./dashboard/constants";
 import { store } from "@/lib/store";
 import { DashboardOverview } from "./dashboard/Overview";
+import ActivationPulse from './dashboard/ActivationPulse';
+import LiveOnboardingFunnel from './dashboard/LiveOnboardingFunnel';
+import FailingSteps from './dashboard/FailingSteps';
+import UserSegments from './dashboard/UserSegments';
+import RecentEvents from './dashboard/RecentEvents';
+import FlowsView from './dashboard/FlowsView';
 import { ClientsView } from "./dashboard/Clients";
 import { EmailsView } from "./dashboard/Emails";
 import { TasksView } from "./dashboard/Tasks";
-import { TemplatesView } from "./dashboard/Templates";
+import { TemplatesView } from "./dashboard/TemplatesView";
 import { SettingsView } from "./dashboard/Settings";
 import { PlaceholderView } from "./dashboard/Placeholder";
+import IntegrationView from './dashboard/IntegrationView';
+import FlowTemplatesView from './dashboard/FlowTemplatesView';
+import VisualFlowEditorView from './dashboard/VisualFlowEditorView';
+import InsightsView from './dashboard/InsightsView';
+import WebhooksView from './dashboard/WebhooksView';
+import ClientManageDialog from '@/components/dialogs/ClientManageDialog';
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const [isNewClientDialogOpen, setIsNewClientDialogOpen] = useState(false);
   const [isNewTaskDialogOpen, setIsNewTaskDialogOpen] = useState(false);
+  const [isManageClientDialogOpen, setIsManageClientDialogOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [clients, setClients] = useState(() => {
     const fromStore = store.getClients();
@@ -101,7 +116,7 @@ const Dashboard = () => {
       progress: 0,
       status: "pending",
       lastActivity: "Just now",
-    });
+    }, 'default-proj');
 
     setClients(store.getClients());
     setNewClient({ name: "", email: "", template: "Enterprise Nexus" });
@@ -110,6 +125,15 @@ const Dashboard = () => {
       description: `${clientObj.name} has been synchronized with ${clientObj.template}.`
     });
   };
+
+  const resetClientForm = () => {
+    setClients(store.getClients());
+    setNewClient({ name: "", email: "", template: "Enterprise Nexus" });
+    setIsNewClientDialogOpen(false);
+  };
+
+  const analytics = store.getAnalytics('default-proj');
+  const failingSteps = store.getFailingSteps('default-proj');
 
   const stats = [
     { label: "Active Clients", value: clients.length.toString(), icon: Users, change: "+2 this week" },
@@ -140,27 +164,73 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "Dashboard":
-        return <DashboardOverview clients={clients} stats={stats} getStatusIcon={getStatusIcon} getStatusLabel={getStatusLabel} />;
+        return (
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <ActivationPulse analytics={analytics} />
+                <LiveOnboardingFunnel funnel={analytics.funnel} />
+                <FailingSteps steps={failingSteps} />
+                <DashboardOverview clients={clients} stats={stats} getStatusIcon={getStatusIcon} getStatusLabel={getStatusLabel} />
+                <RecentEvents />
+              </div>
+              <div>
+                <UserSegments />
+              </div>
+            </div>
+          </>
+        );
       case "Clients":
-        return <ClientsView clients={clients} searchQuery={searchQuery} setSearchQuery={setSearchQuery} setIsNewClientDialogOpen={setIsNewClientDialogOpen} getStatusIcon={getStatusIcon} getStatusLabel={getStatusLabel} />;
+        return <ClientsView 
+          clients={clients} 
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery} 
+          setIsNewClientDialogOpen={setIsNewClientDialogOpen} 
+          getStatusIcon={getStatusIcon} 
+          getStatusLabel={getStatusLabel}
+          onManageClient={(client) => {
+            setSelectedClient(client);
+            setIsManageClientDialogOpen(true);
+          }}
+        />;
       case "Emails":
         return <EmailsView />;
       case "Tasks":
         return <TasksView isAddDialogOpen={isNewTaskDialogOpen} setIsAddDialogOpen={setIsNewTaskDialogOpen} />;
       case "Templates":
         return <TemplatesView />;
+      case "Flows":
+        return <FlowsView />;
       case "Settings":
         return <SettingsView />;
+      case "Integration":
+        return <IntegrationView />;
+      case "Flow Templates":
+        return <FlowTemplatesView />;
+      case "Visual Flow Editor":
+        return <VisualFlowEditorView />;
+      case "Insights":
+        return <InsightsView />;
+      case "Webhooks":
+        return <WebhooksView />;
       default:
         return <PlaceholderView title={activeTab} onReset={() => navigate("/dashboard")} />;
     }
   };
 
   return (
-    <div className="h-[var(--viewport-height)] bg-[#0b0c10] flex overflow-hidden relative selection:bg-accent/30 leading-tight">
+    <div className="min-h-screen bg-[#0b0c10] flex overflow-hidden relative selection:bg-accent/30 leading-tight">
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`${sidebarOpen ? 'w-52' : 'w-16'} hidden md:flex flex-col border-r border-white/5 bg-[#0b0c10] transition-all duration-300 relative z-20 shrink-0`}
+        className={`${sidebarOpen ? 'w-52' : 'w-16'} ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative flex flex-col border-r border-white/5 bg-[#0b0c10] transition-all duration-300 z-50 shrink-0 h-full`}
       >
         <div className="p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -174,16 +244,27 @@ const Dashboard = () => {
               </div>
             )}
           </Link>
-          {sidebarOpen && (
-            <button onClick={() => setSidebarOpen(false)} className="text-white/20 hover:text-white transition-colors">
-              <PanelLeftClose className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-2">
+            {sidebarOpen && (
+              <button onClick={() => setSidebarOpen(false)} className="hidden md:flex text-white/20 hover:text-white transition-colors">
+                <PanelLeftClose className="w-3.5 h-3.5" />
+              </button>
+            )}
+            <button 
+              onClick={() => setMobileMenuOpen(false)} 
+              className="md:hidden text-white/20 hover:text-white transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
             </button>
-          )}
+          </div>
         </div>
 
         {!sidebarOpen && (
           <div className="flex justify-center py-2">
-            <button onClick={() => setSidebarOpen(true)} className="w-7 h-7 flex items-center justify-center rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all">
+            <button 
+              onClick={() => setSidebarOpen(true)} 
+              className="hidden md:flex w-7 h-7 items-center justify-center rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all"
+            >
               <PanelLeft className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -196,6 +277,7 @@ const Dashboard = () => {
               <Link
                 key={item.label}
                 to={item.path}
+                onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-all group ${isActive ? 'bg-accent/10 text-accent shadow-[0_0_15px_rgba(255,107,74,0.05)]' : 'text-white/30 hover:text-white/60 hover:bg-white/[0.02]'
                   }`}
               >
@@ -226,10 +308,17 @@ const Dashboard = () => {
         <div className="flex-1 bg-[#14151b]/40 md:backdrop-blur-3xl md:border md:border-white/5 md:rounded-[1rem] flex flex-col overflow-hidden shadow-2xl">
           <header className="h-11 border-b border-white/5 flex items-center justify-between px-4 bg-white/[0.01]">
             <div className="flex items-center gap-2">
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="md:hidden text-white/20 hover:text-white transition-colors"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
               <div className="w-0.5 h-3 bg-accent rounded-full" />
               <h1 className="text-[11px] font-black uppercase tracking-widest text-white/80">{activeTab}</h1>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <div className="hidden lg:flex relative group">
                 <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-accent" />
                 <Input
@@ -247,10 +336,13 @@ const Dashboard = () => {
                   if (activeTab === "Tasks") setIsNewTaskDialogOpen(true);
                   if (activeTab === "Templates") toast.info("Forge Active");
                 }}
-                className="h-6 px-2.5 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-glow"
+                className="h-6 px-2 md:px-2.5 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-glow"
               >
                 <Plus className="w-3 h-3 mr-1" />
-                {activeTab === "Tasks" ? "Assign" : activeTab === "Templates" ? "Forge" : "Integrate"}
+                <span className="hidden sm:inline">
+                  {activeTab === "Tasks" ? "Assign" : activeTab === "Templates" ? "Forge" : "Integrate"}
+                </span>
+                <span className="sm:hidden">+</span>
               </Button>
               <div className="flex items-center gap-2 border-l border-white/5 pl-3">
                 <Button variant="ghost" size="icon" className="h-6 w-6 text-white/20 hover:text-white">
@@ -290,6 +382,13 @@ const Dashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog for Managing Client */}
+      <ClientManageDialog
+        open={isManageClientDialogOpen}
+        onOpenChange={setIsManageClientDialogOpen}
+        client={selectedClient}
+      />
     </div>
   );
 };

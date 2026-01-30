@@ -1,17 +1,24 @@
-import { LayoutDashboard, Users, FileText, Mail, CheckSquare, Settings } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Mail, CheckSquare, Settings, Zap } from "lucide-react";
 
 export const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { icon: Users, label: "Clients", path: "/dashboard/clients" },
+    { icon: FileText, label: "Flows", path: "/dashboard/flows" },
     { icon: FileText, label: "Templates", path: "/dashboard/templates" },
     { icon: Mail, label: "Emails", path: "/dashboard/emails" },
     { icon: CheckSquare, label: "Tasks", path: "/dashboard/tasks" },
     { icon: Settings, label: "Settings", path: "/dashboard/settings" },
+    { icon: Zap, label: "Integration", path: "/dashboard/integration" },
+    { icon: FileText, label: "Flow Templates", path: "/dashboard/flow-templates" },
+    { icon: Zap, label: "Visual Flow Editor", path: "/dashboard/visual-flow-editor" },
+    { icon: Zap, label: "Insights", path: "/dashboard/insights" },
+    { icon: Zap, label: "Webhooks", path: "/dashboard/webhooks" },
 ];
 
 export const initialClients = [
     {
         name: "Sarah Johnson",
+        slug: "sarah-johnson",
         email: "sarah@company.com",
         template: "Enterprise Nexus",
         progress: 75,
@@ -20,6 +27,7 @@ export const initialClients = [
     },
     {
         name: "Michael Chen",
+        slug: "michael-chen",
         email: "michael@startup.io",
         template: "Velocity Stream",
         progress: 100,
@@ -28,6 +36,7 @@ export const initialClients = [
     },
     {
         name: "Emily Davis",
+        slug: "emily-davis",
         email: "emily@agency.com",
         template: "Standard Onboarding",
         progress: 25,
@@ -36,6 +45,7 @@ export const initialClients = [
     },
     {
         name: "Alex Thompson",
+        slug: "alex-thompson",
         email: "alex@business.net",
         template: "Quick Start",
         progress: 50,
@@ -44,6 +54,7 @@ export const initialClients = [
     },
     {
         name: "Jessica Wu",
+        slug: "jessica-wu",
         email: "jess@quantum.tech",
         template: "Enterprise Nexus",
         progress: 92,
@@ -52,6 +63,7 @@ export const initialClients = [
     },
     {
         name: "David Miller",
+        slug: "david-miller",
         email: "david@forbes.com",
         template: "Global Expansion",
         progress: 15,
@@ -60,6 +72,7 @@ export const initialClients = [
     },
     {
         name: "Sophia Loren",
+        slug: "sophia-loren",
         email: "sophia@vogue.it",
         template: "Brand Identity",
         progress: 100,
