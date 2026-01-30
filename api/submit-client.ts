@@ -8,9 +8,11 @@ export default async function handler(req: any, res: any) {
     if (!name || !email) return res.status(400).json({ error: 'Missing name/email' });
 
     const createdAt = new Date().toISOString();
-    const docRef = firestore.collection('clients').doc();
+
+    // if Firestore is not configured, fall back to a local id and do not attempt writes
+    const clientId = firestore ? firestore.collection('clients').doc().id : `local-${Date.now()}`;
     const client = {
-      id: docRef.id,
+      id: clientId,
       name,
       email,
       company: company || '',
@@ -21,9 +23,11 @@ export default async function handler(req: any, res: any) {
       createdAt
     };
 
-    await docRef.set(client);
+    if (firestore) {
+      await firestore.collection('clients').doc(client.id).set(client);
+    }
 
-    // send welcome email
+    // send welcome email (stub records 'skipped' when no send service configured)
     const mailResult = await sendWelcomeEmail(client);
 
     return res.json({ ok: true, client, mailResult });

@@ -23,6 +23,6 @@ if (!admin.apps.length) {
   }
 }
 
-export const firestore = admin.firestore();
-export const storage = admin.storage ? admin.storage() : undefined;
+export const firestore = admin.apps.length ? admin.firestore() : undefined;
+export const storage = admin.apps.length && admin.storage ? admin.storage() : undefined;
 export default admin;
