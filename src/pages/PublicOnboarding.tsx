@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import {
     CheckCircle2,
@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
+import { store } from "@/lib/store";
+import OptimizedImage from "@/components/OptimizedImage";
 
 const PublicOnboarding = () => {
     const { id } = useParams();
@@ -30,12 +32,39 @@ const PublicOnboarding = () => {
 
     const progress = (tasks.filter(t => t.completed).length / tasks.length) * 100;
 
+    useEffect(() => {
+        if (!id) return;
+        const found = store.getClients().find(c => c.slug === id);
+        if (found) {
+            setFormData({ name: found.name, company: found.company || "", email: found.email });
+            setTasks(found.tasks && found.tasks.length ? found.tasks : tasks);
+            setStep(2);
+        }
+    }, [id]);
+
     const handleFormSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name) return;
         toast.promise(new Promise(resolve => setTimeout(resolve, 1000)), {
             loading: 'Initializing Nexus...',
             success: () => {
+                // Persist client locally and add a welcome transmission
+                const clientObj = store.addClient({
+                    name: formData.name,
+                    email: formData.email,
+                    company: formData.company,
+                    tasks,
+                    progress: (tasks.filter(t => t.completed).length / tasks.length) * 100,
+                    status: "in_progress",
+                    lastActivity: "Just now",
+                });
+
+                store.addTransmission({
+                    client: clientObj.name,
+                    template: "Welcome",
+                    status: "sent"
+                } as any);
+
                 setStep(2);
                 return 'Integration Established';
             },
@@ -60,7 +89,7 @@ const PublicOnboarding = () => {
                 <header className="flex items-center justify-between mb-8 px-2">
                     <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-lg bg-accent p-1 shadow-glow shrink-0">
-                            <img src="/assets/brand/logo.png" alt="O" className="w-full h-full object-contain" />
+                            <OptimizedImage src="/assets/brand/logo.png" alt="O" className="w-full h-full object-contain" />
                         </div>
                         <span className="text-sm font-black tracking-tighter uppercase italic text-white/90">Onboardly <span className="text-accent underline decoration-accent/20">Nexus</span></span>
                     </div>

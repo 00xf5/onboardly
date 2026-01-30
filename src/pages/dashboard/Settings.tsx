@@ -18,19 +18,31 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { store } from "@/lib/store";
 
 export const SettingsView = () => {
-    const [plan, setPlan] = useState("free"); // free | pro
+    const [plan, setPlan] = useState(() => store.getPlan()); // free | pro
 
-    const handleUpgrade = () => {
-        toast.promise(new Promise(resolve => setTimeout(resolve, 1500)), {
-            loading: 'Stripe Link Active...',
-            success: () => {
-                setPlan("pro");
-                return 'Enterprise Tier Unlocked';
-            },
-            error: 'Authorization failed',
-        });
+    const handleUpgrade = async () => {
+        try {
+            const resp = await fetch('/api/create-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clientId: 'admin', plan: 'premium' })
+            });
+            const json = await resp.json();
+            if (!json.ok) throw new Error(json.error || 'Payment creation failed');
+            const invoice = json.invoice;
+            const paymentUrl = invoice.invoice_url || invoice.payment_url || invoice.url || (invoice.payment && invoice.payment.url);
+            if (paymentUrl) {
+                window.open(paymentUrl, '_blank');
+                toast.success('Payment initiated — complete the purchase in the new tab.');
+            } else {
+                toast.error('Failed to retrieve payment URL');
+            }
+        } catch (err: any) {
+            toast.error(err?.message || String(err));
+        }
     };
 
     return (

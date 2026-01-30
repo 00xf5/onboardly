@@ -1,8 +1,9 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Send, Clock, Edit3, Trash2, Plus, ArrowUpRight, CheckCircle2, AlertCircle, Eye, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { store } from "@/lib/store";
 import {
     Dialog,
     DialogContent,
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
-export const EmailsView = () => {
+export const EmailsView = React.memo(() => {
     const [templates, setTemplates] = useState([
         {
             id: 1,
@@ -41,12 +42,15 @@ export const EmailsView = () => {
         }
     ]);
 
-    const [transmissions] = useState([
-        { id: 1, client: "Jessica Wu", template: "Initial Contact", time: "12m", status: "opened" },
-        { id: 2, client: "Sarah Johnson", template: "Reminder", time: "1h", status: "sent" },
-        { id: 3, client: "David Miller", template: "Initial Contact", time: "3h", status: "bounced" },
-        { id: 4, client: "Alex Thompson", template: "Mission Complete", time: "5h", status: "opened" },
-    ]);
+    const [transmissions, setTransmissions] = useState(() => {
+        return store.getTransmissions();
+    });
+
+    useEffect(() => {
+        const handler = () => setTransmissions(store.getTransmissions());
+        window.addEventListener('onboardly:transmissions:updated', handler as EventListener);
+        return () => window.removeEventListener('onboardly:transmissions:updated', handler as EventListener);
+    }, []);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [newTemplate, setNewTemplate] = useState({ name: "", subject: "" });

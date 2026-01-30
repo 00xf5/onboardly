@@ -1,9 +1,13 @@
+import React, { useMemo } from "react";
 import { Search, Plus, MoreVertical, Filter, SlidersHorizontal, ArrowUpRight, Link as LinkIcon, Copy } from "lucide-react";
+import { FixedSizeList } from 'react-window';
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+
+import useDebounce from "@/hooks/use-debounce";
 
 interface ClientsViewProps {
     clients: any[];
@@ -14,18 +18,20 @@ interface ClientsViewProps {
     getStatusLabel: (status: string) => string;
 }
 
-export const ClientsView = ({
+export const ClientsView = React.memo(function ClientsView({
     clients,
     searchQuery,
     setSearchQuery,
     setIsNewClientDialogOpen,
     getStatusIcon,
     getStatusLabel
-}: ClientsViewProps) => {
-    const filteredClients = clients.filter(c =>
-        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+}: ClientsViewProps) {
+    const debouncedQuery = useDebounce(searchQuery, 250);
+
+    const filteredClients = useMemo(() => clients.filter(c =>
+        c.name.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+        c.email.toLowerCase().includes(debouncedQuery.toLowerCase())
+    ), [clients, debouncedQuery]);
 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
@@ -65,85 +71,95 @@ export const ClientsView = ({
             {/* Matrix Table */}
             <div className="bg-[#1a1b23]/40 backdrop-blur-3xl rounded-xl border border-white/5 overflow-hidden">
                 <div className="overflow-x-auto p-1.5">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="text-white/10 uppercase tracking-[0.2em] text-[8px] font-black border-b border-white/[0.03]">
-                                <th className="py-3 px-3">Entity</th>
-                                <th className="py-3 px-3">Strategy</th>
-                                <th className="py-3 px-3">Velocity</th>
-                                <th className="py-3 px-3">State</th>
-                                <th className="py-3 px-3 text-right">Relay</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/[0.01]">
-                            {filteredClients.map((client, index) => (
-                                <tr key={index} className="group hover:bg-white/[0.01] transition-colors">
-                                    <td className="py-2.5 px-3">
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="w-7 h-7 rounded-lg ring-1 ring-white/5 group-hover:ring-accent/30 transition-all">
-                                                <AvatarFallback className="bg-white/5 text-white/40 font-black text-[8px]">
-                                                    {client.name.split(' ').map((n: string) => n[0]).join('')}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="min-w-0">
-                                                <p className="text-[11px] font-bold text-white group-hover:text-accent transition-colors">{client.name}</p>
-                                                <p className="text-[9px] text-white/20 truncate leading-tight mt-0.5 uppercase tracking-tighter">{client.email}</p>
+                    <div className="w-full text-left">
+                        <div className="text-white/10 uppercase tracking-[0.2em] text-[8px] font-black border-b border-white/[0.03] grid grid-cols-5 py-3 px-3">
+                            <div>Entity</div>
+                            <div>Strategy</div>
+                            <div>Velocity</div>
+                            <div>State</div>
+                            <div className="text-right">Relay</div>
+                        </div>
+
+                        <div style={{ height: Math.min(400, filteredClients.length * 72) }}>
+                            <FixedSizeList
+                                height={Math.min(400, filteredClients.length * 72)}
+                                itemCount={filteredClients.length}
+                                itemSize={72}
+                                width="100%"
+                            >
+                                {({ index, style }) => {
+                                    const client = filteredClients[index];
+                                    return (
+                                        <div style={style} key={client.id} className="grid grid-cols-5 items-center gap-4 px-3 hover:bg-white/[0.01] transition-colors">
+                                            <div className="py-2.5">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="w-7 h-7 rounded-lg ring-1 ring-white/5 group-hover:ring-accent/30 transition-all">
+                                                        <AvatarFallback className="bg-white/5 text-white/40 font-black text-[8px]">
+                                                            {client.name.split(' ').map((n: string) => n[0]).join('')}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="min-w-0">
+                                                        <p className="text-[11px] font-bold text-white group-hover:text-accent transition-colors">{client.name}</p>
+                                                        <p className="text-[9px] text-white/20 truncate leading-tight mt-0.5 uppercase tracking-tighter">{client.email}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="py-2.5">
+                                                <span className="text-[9px] font-bold text-white/40 bg-white/5 border border-white/5 px-2 py-0.5 rounded-md">
+                                                    {client.template}
+                                                </span>
+                                            </div>
+                                            <div className="py-2.5">
+                                                <div className="flex items-center gap-2 w-28">
+                                                    <div className="h-0.5 flex-1 bg-white/5 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-accent shadow-glow transition-all duration-1000 ease-out"
+                                                            style={{ width: `${client.progress}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-[9px] font-black text-white italic tracking-tighter">{client.progress}%</span>
+                                                </div>
+                                            </div>
+                                            <div className="py-2.5">
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-md w-fit border border-white/5">
+                                                    {getStatusIcon(client.status)}
+                                                    <span className="text-[8px] font-black uppercase text-white/40 tracking-widest leading-none">
+                                                        {getStatusLabel(client.status)}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="py-2.5 text-right">
+                                                <div className="flex items-center justify-end gap-1.5">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            const slug = (client as any).slug ? (client as any).slug : client.name.toLowerCase().replace(/\s+/g, '-');
+                                                            const url = `${window.location.origin}/onboard/${slug}`;
+                                                            navigator.clipboard.writeText(url);
+                                                            toast.success("Sync Link Copied");
+                                                        }}
+                                                        className="h-7 w-7 p-0 rounded-lg bg-white/5 border border-white/5 text-white/20 hover:text-accent"
+                                                        title="Copy Link"
+                                                    >
+                                                        <LinkIcon className="w-3.5 h-3.5" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => toast.info(`Managing ${client.name}`)}
+                                                        className="h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white hover:bg-white/10"
+                                                    >
+                                                        Manage
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td className="py-2.5 px-3">
-                                        <span className="text-[9px] font-bold text-white/40 bg-white/5 border border-white/5 px-2 py-0.5 rounded-md">
-                                            {client.template}
-                                        </span>
-                                    </td>
-                                    <td className="py-2.5 px-3">
-                                        <div className="flex items-center gap-2 w-28">
-                                            <div className="h-0.5 flex-1 bg-white/5 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-accent shadow-glow transition-all duration-1000 ease-out"
-                                                    style={{ width: `${client.progress}%` }}
-                                                />
-                                            </div>
-                                            <span className="text-[9px] font-black text-white italic tracking-tighter">{client.progress}%</span>
-                                        </div>
-                                    </td>
-                                    <td className="py-2.5 px-3">
-                                        <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-md w-fit border border-white/5">
-                                            {getStatusIcon(client.status)}
-                                            <span className="text-[8px] font-black uppercase text-white/40 tracking-widest leading-none">
-                                                {getStatusLabel(client.status)}
-                                            </span>
-                                        </div>
-                                    </td>
-                                    <td className="py-2.5 px-3 text-right">
-                                        <div className="flex items-center justify-end gap-1.5">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                    const url = `${window.location.origin}/onboard/${client.name.toLowerCase().replace(/\s+/g, '-')}`;
-                                                    navigator.clipboard.writeText(url);
-                                                    toast.success("Sync Link Copied");
-                                                }}
-                                                className="h-7 w-7 p-0 rounded-lg bg-white/5 border border-white/5 text-white/20 hover:text-accent"
-                                                title="Copy Link"
-                                            >
-                                                <LinkIcon className="w-3.5 h-3.5" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => toast.info(`Managing ${client.name}`)}
-                                                className="h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white hover:bg-white/10"
-                                            >
-                                                Manage
-                                            </Button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                    );
+                                }}
+                            </FixedSizeList>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileText, Plus, Search, Trash2, Edit3, CheckCircle2, Copy, Rocket, Zap, Shield, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { store } from "@/lib/store";
 import {
     Dialog,
     DialogContent,
@@ -14,45 +15,39 @@ import {
 import { Label } from "@/components/ui/label";
 
 export const TemplatesView = () => {
-    const [templates, setTemplates] = useState([
-        {
-            id: 1,
-            title: "Enterprise Nexus",
-            description: "High-compliance protocol for global institutions.",
-            tasks: 12,
-            icon: Shield,
-            color: "text-accent"
-        },
-        {
-            id: 2,
-            title: "Velocity Stream",
-            description: "Rapid onboarding for high-growth startups.",
-            tasks: 6,
-            icon: Zap,
-            color: "text-orange-500"
-        },
-        {
-            id: 3,
-            title: "Standard Ops",
-            description: "Baseline verification sequence for standard partners.",
-            tasks: 8,
-            icon: Target,
-            color: "text-blue-400"
-        },
-    ]);
+    const [templates, setTemplates] = useState(() => {
+        const fromStore = store.getTemplates();
+        return fromStore.map(t => ({
+            ...t,
+            icon: FileText,
+            color: "text-white/40",
+            tasks: t.tasks ? t.tasks.length : 0
+        }));
+    });
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [newTemplate, setNewTemplate] = useState({ title: "", description: "" });
 
+    useEffect(() => {
+        const handler = () => setTemplates(store.getTemplates().map(t => ({ ...t, icon: FileText, color: "text-white/40", tasks: t.tasks ? t.tasks.length : 0 })));
+        window.addEventListener('onboardly:templates:updated', handler as EventListener);
+        return () => window.removeEventListener('onboardly:templates:updated', handler as EventListener);
+    }, []);
+
     const handleAddTemplate = () => {
         if (!newTemplate.title) return;
-        setTemplates([...templates, {
-            id: Date.now(),
-            ...newTemplate,
-            tasks: 0,
-            icon: FileText,
-            color: "text-white/40"
-        }]);
+        const plan = store.getPlan();
+        const existing = store.getTemplates();
+        if (plan === 'free' && existing.length >= 1) {
+            toast.error('Upgrade to Pro to create more blueprints');
+            return;
+        }
+        const created = store.addTemplate({
+            title: newTemplate.title,
+            description: newTemplate.description,
+            tasks: []
+        } as any);
+        setTemplates(store.getTemplates().map(t => ({ ...t, icon: FileText, color: "text-white/40", tasks: t.tasks ? t.tasks.length : 0 })));
         setIsAddDialogOpen(false);
         setNewTemplate({ title: "", description: "" });
         toast.success("Blueprint Forged");
@@ -99,7 +94,10 @@ export const TemplatesView = () => {
                                     <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg bg-white/5 text-white/20 hover:text-white" onClick={() => toast.info("Cloning Sequence")}>
                                         <Copy className="w-3 h-3" />
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg bg-white/5 text-white/10 hover:text-red-400" onClick={() => setTemplates(prev => prev.filter(t => t.id !== template.id))}>
+                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-lg bg-white/5 text-white/10 hover:text-red-400" onClick={() => {
+                                        store.deleteTemplate(template.id);
+                                        setTemplates(store.getTemplates().map(t => ({ ...t, icon: FileText, color: "text-white/40", tasks: t.tasks ? t.tasks.length : 0 })));
+                                    }}>
                                         <Trash2 className="w-3 h-3" />
                                     </Button>
                                 </div>

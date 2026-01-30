@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { FixedSizeList } from 'react-window';
 import { CheckSquare, Search, Plus, MoreVertical, Calendar, User, ShieldCheck, Zap, Target, Activity, Edit3, Trash2, ChevronRight, ChevronDown, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -26,7 +27,9 @@ interface TasksViewProps {
     setIsAddDialogOpen: (open: boolean) => void;
 }
 
-export const TasksView = ({ isAddDialogOpen, setIsAddDialogOpen }: TasksViewProps) => {
+import useDebounce from "@/hooks/use-debounce";
+
+export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsAddDialogOpen }: TasksViewProps) {
     const [tasks, setTasks] = useState([
         { id: 1, title: "Initialize Security Protocol", client: "Jessica Wu", due: "Immediate", completed: false, priority: "crit", description: "Establish encrypted communication channels and verify identity headers for the primary nexus node." },
         { id: 2, title: "Validate Governance Docs", client: "Sarah Johnson", due: "2h remaining", completed: true, priority: "med", description: "Review and approve legal frameworks and compliance documentation for the Q1 initiative." },
@@ -38,6 +41,13 @@ export const TasksView = ({ isAddDialogOpen, setIsAddDialogOpen }: TasksViewProp
     const [expandedTaskId, setExpandedTaskId] = useState<number | null>(null);
     const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
     const [newTask, setNewTask] = useState({ title: "", client: "Internal", priority: "med", due: "Asap" });
+
+    const debouncedQuery = useDebounce(searchQuery, 250);
+
+    const filteredTasks = useMemo(() => tasks.filter(t =>
+        t.title.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+        t.client.toLowerCase().includes(debouncedQuery.toLowerCase())
+    ), [tasks, debouncedQuery]);
 
     const toggleTask = (id: number) => {
         setTasks(prev => prev.map(t => {
@@ -62,10 +72,12 @@ export const TasksView = ({ isAddDialogOpen, setIsAddDialogOpen }: TasksViewProp
         toast.success("Objective Manifested");
     };
 
-    const filteredTasks = tasks.filter(t =>
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.client.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // replaced by debounced + memoized filteredTasks earlier
+    // kept for safety if other code references it
+    // const filteredTasks = tasks.filter(t =>
+    //     t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    //     t.client.toLowerCase().includes(searchQuery.toLowerCase())
+    // );
 
     const getPriorityColor = (p: string) => {
         switch (p) {
@@ -104,65 +116,74 @@ export const TasksView = ({ isAddDialogOpen, setIsAddDialogOpen }: TasksViewProp
 
             {/* Tasks List */}
             <div className="space-y-2">
-                {filteredTasks.map((task) => (
-                    <div
-                        key={task.id}
-                        className={`group p-3 bg-[#1a1b23]/40 backdrop-blur-3xl rounded-xl border border-white/5 hover:border-accent/20 transition-all ${task.completed ? 'opacity-40' : ''}`}
+                <div style={{ height: Math.min(480, tasks.length * 84) }}>
+                    <FixedSizeList
+                        height={Math.min(480, tasks.length * 84)}
+                        itemCount={tasks.length}
+                        itemSize={84}
+                        width="100%"
                     >
-                        <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => toggleTask(task.id)}
-                                    className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${task.completed ? 'bg-success border-success text-black' : 'border-white/10 bg-white/5 hover:border-accent'}`}
-                                >
-                                    {task.completed && <Check className="w-3 h-3" />}
-                                </button>
-                                <div className="min-w-0">
-                                    <h3 className={`text-[11px] font-bold text-white transition-all ${task.completed ? 'line-through text-white/40' : ''}`}>{task.title}</h3>
-                                    <div className="flex items-center gap-3 mt-0.5">
-                                        <div className="flex items-center gap-1">
-                                            <User className="w-2.5 h-2.5 text-white/20" />
-                                            <span className="text-[9px] font-black uppercase tracking-tighter text-white/30">{task.client}</span>
+                        {({ index, style }) => {
+                            const task = filteredTasks[index];
+                            return (
+                                <div style={style} key={task.id} className={`group p-3 bg-[#1a1b23]/40 backdrop-blur-3xl rounded-xl border border-white/5 hover:border-accent/20 transition-all ${task.completed ? 'opacity-40' : ''}`}>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => toggleTask(task.id)}
+                                                className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${task.completed ? 'bg-success border-success text-black' : 'border-white/10 bg-white/5 hover:border-accent'}`}
+                                            >
+                                                {task.completed && <Check className="w-3 h-3" />}
+                                            </button>
+                                            <div className="min-w-0">
+                                                <h3 className={`text-[11px] font-bold text-white transition-all ${task.completed ? 'line-through text-white/40' : ''}`}>{task.title}</h3>
+                                                <div className="flex items-center gap-3 mt-0.5">
+                                                    <div className="flex items-center gap-1">
+                                                        <User className="w-2.5 h-2.5 text-white/20" />
+                                                        <span className="text-[9px] font-black uppercase tracking-tighter text-white/30">{task.client}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <Clock className="w-2.5 h-2.5 text-white/20" />
+                                                        <span className="text-[9px] font-black uppercase tracking-tighter text-white/30">{task.due}</span>
+                                                    </div>
+                                                    <div className={`text-[8px] font-black uppercase tracking-[0.2em] ${getPriorityColor(task.priority)}`}>
+                                                        {task.priority}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div className="flex items-center gap-1">
-                                            <Clock className="w-2.5 h-2.5 text-white/20" />
-                                            <span className="text-[9px] font-black uppercase tracking-tighter text-white/30">{task.due}</span>
-                                        </div>
-                                        <div className={`text-[8px] font-black uppercase tracking-[0.2em] ${getPriorityColor(task.priority)}`}>
-                                            {task.priority}
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}
+                                                className="h-7 w-7 p-0 rounded-md text-white/20 hover:text-white"
+                                            >
+                                                {expandedTaskId === task.id ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => toast.info("Archiving Objective")}
+                                                className="h-7 w-7 p-0 rounded-md text-white/10 hover:text-red-400"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </Button>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setExpandedTaskId(expandedTaskId === task.id ? null : task.id)}
-                                    className="h-7 w-7 p-0 rounded-md text-white/20 hover:text-white"
-                                >
-                                    {expandedTaskId === task.id ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => toast.info("Archiving Objective")}
-                                    className="h-7 w-7 p-0 rounded-md text-white/10 hover:text-red-400"
-                                >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                </Button>
-                            </div>
-                        </div>
 
-                        {expandedTaskId === task.id && (
-                            <div className="mt-3 pt-3 border-t border-white/5 ml-8 animate-in slide-in-from-top-2 duration-300">
-                                <p className="text-[10px] text-white/40 leading-relaxed italic">
-                                    {task.description}
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                ))}
+                                    {expandedTaskId === task.id && (
+                                        <div className="mt-3 pt-3 border-t border-white/5 ml-8 animate-in slide-in-from-top-2 duration-300">
+                                            <p className="text-[10px] text-white/40 leading-relaxed italic">
+                                                {task.description}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }}
+                    </FixedSizeList>
+                </div>
             </div>
 
             {/* Task Dialog */}

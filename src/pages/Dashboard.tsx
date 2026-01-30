@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +34,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import OptimizedImage from "@/components/OptimizedImage";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -44,6 +45,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { navItems, initialClients } from "./dashboard/constants";
+import { store } from "@/lib/store";
 import { DashboardOverview } from "./dashboard/Overview";
 import { ClientsView } from "./dashboard/Clients";
 import { EmailsView } from "./dashboard/Emails";
@@ -58,9 +60,18 @@ const Dashboard = () => {
   const [isNewClientDialogOpen, setIsNewClientDialogOpen] = useState(false);
   const [isNewTaskDialogOpen, setIsNewTaskDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [clients, setClients] = useState(initialClients);
+  const [clients, setClients] = useState(() => {
+    const fromStore = store.getClients();
+    return fromStore.length ? fromStore : initialClients;
+  });
   const [newClient, setNewClient] = useState({ name: "", email: "", template: "Enterprise Nexus" });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handler = () => setClients(store.getClients());
+    window.addEventListener('onboardly:clients:updated', handler as EventListener);
+    return () => window.removeEventListener('onboardly:clients:updated', handler as EventListener);
+  }, []);
 
   const activeTab = useMemo(() => {
     const path = location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname;
@@ -74,18 +85,29 @@ const Dashboard = () => {
       return;
     }
 
-    const clientToAdd = {
-      ...newClient,
+    const template = store.getTemplates().find(t => t.title === newClient.template);
+    const plan = store.getPlan();
+    const existingClients = store.getClients();
+    if (plan === 'free' && existingClients.length >= 1) {
+      toast.error('Upgrade to Pro to add more partners');
+      return;
+    }
+
+    const clientObj = store.addClient({
+      name: newClient.name,
+      email: newClient.email,
+      template: newClient.template,
+      tasks: template?.tasks ? template.tasks.map(tsk => ({ ...tsk, completed: false })) : [],
       progress: 0,
       status: "pending",
-      lastActivity: "Just now"
-    };
+      lastActivity: "Just now",
+    });
 
-    setClients([clientToAdd, ...clients]);
+    setClients(store.getClients());
     setNewClient({ name: "", email: "", template: "Enterprise Nexus" });
     setIsNewClientDialogOpen(false);
     toast.success("Inbound Flow Initialized", {
-      description: `${newClient.name} has been synchronized with ${newClient.template}.`
+      description: `${clientObj.name} has been synchronized with ${clientObj.template}.`
     });
   };
 
@@ -143,7 +165,7 @@ const Dashboard = () => {
         <div className="p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-accent p-1 shadow-glow shrink-0 overflow-hidden">
-              <img src="/assets/brand/logo.png" alt="O" className="w-full h-full object-contain" />
+              <OptimizedImage src="/assets/brand/logo.png" alt="O" className="w-full h-full object-contain" />
             </div>
             {sidebarOpen && (
               <div className="flex flex-col animate-in fade-in duration-500">
