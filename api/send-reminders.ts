@@ -4,6 +4,7 @@ import { sendReminderEmail } from './_mail.js';
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
+    if (!firestore) return res.status(500).json({ error: 'Firestore not initialized' });
     // Find clients with incomplete tasks or tasks past due
     const clientsSnap = await firestore.collection('clients').get();
     const sent: any[] = [];
