@@ -6,27 +6,27 @@
 
 @layer base {
   :root {
-    /* Background & Surfaces */
-    --background: 240 10% 4%;
-    --foreground: 60 10% 98%;
+    /* Background & Surfaces - Dark Theme */
+    --background: 240 10% 6%;
+    --foreground: 60 10% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 8%;
+    --card: 240 10% 10%;
+    --card-foreground: 60 10% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 8%;
+    --popover: 240 10% 10%;
+    --popover-foreground: 60 10% 95%;
 
-    /* Primary - Deep Charcoal */
-    --primary: 240 10% 8%;
-    --primary-foreground: 60 10% 98%;
+    /* Primary - Light Gray */
+    --primary: 60 10% 95%;
+    --primary-foreground: 240 10% 8%;
 
-    /* Secondary */
-    --secondary: 45 20% 95%;
-    --secondary-foreground: 240 10% 15%;
+    /* Secondary - Dark Gray */
+    --secondary: 240 8% 15%;
+    --secondary-foreground: 60 10% 90%;
 
-    /* Muted */
-    --muted: 45 10% 92%;
-    --muted-foreground: 240 5% 45%;
+    /* Muted - Very Dark Gray */
+    --muted: 240 8% 15%;
+    --muted-foreground: 240 5% 55%;
 
     /* Accent - Warm Coral */
     --accent: 12 90% 62%;
@@ -41,30 +41,30 @@
     --warning-foreground: 0 0% 100%;
 
     /* Destructive */
-    --destructive: 0 72% 51%;
+    --destructive: 0 62.8% 45%;
     --destructive-foreground: 60 10% 98%;
 
     /* Borders & Inputs */
-    --border: 45 15% 88%;
-    --input: 45 15% 88%;
-    --ring: 240 10% 8%;
+    --border: 240 8% 18%;
+    --input: 240 8% 18%;
+    --ring: 12 90% 62%;
 
     --radius: 0.75rem;
 
     /* Sidebar */
     --sidebar-background: 240 10% 8%;
-    --sidebar-foreground: 60 10% 95%;
+    --sidebar-foreground: 60 10% 90%;
     --sidebar-primary: 12 90% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 8% 15%;
-    --sidebar-accent-foreground: 60 10% 95%;
+    --sidebar-accent-foreground: 60 10% 90%;
     --sidebar-border: 240 8% 18%;
     --sidebar-ring: 12 90% 62%;
 
     /* Custom */
-    --gradient-hero: none;
-    --gradient-accent: none;
-    --gradient-warm: none;
+    --gradient-hero: linear-gradient(135deg, hsl(240 10% 15%) 0%, hsl(12 90% 62%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(12 90% 62%) 0%, hsl(12 85% 55%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(12 90% 62%) 100%);
 
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 2px 6px -1px rgb(0 0 0 / 0.08);

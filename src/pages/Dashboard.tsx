@@ -65,9 +65,11 @@ import VisualFlowEditorView from './dashboard/VisualFlowEditorView';
 import InsightsView from './dashboard/InsightsView';
 import WebhooksView from './dashboard/WebhooksView';
 import ClientManageDialog from '@/components/dialogs/ClientManageDialog';
+import DashboardMetrics from '@/components/dashboard/DashboardMetrics';
+import Notifications from '@/components/dashboard/Notifications';
 
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const [isNewClientDialogOpen, setIsNewClientDialogOpen] = useState(false);
@@ -135,12 +137,52 @@ const Dashboard = () => {
   const analytics = store.getAnalytics('default-proj');
   const failingSteps = store.getFailingSteps('default-proj');
 
-  const stats = [
-    { label: "Active Clients", value: clients.length.toString(), icon: Users, change: "+2 this week" },
-    { label: "Completion Rate", value: "86%", icon: Zap, change: "Optimized" },
-    { label: "Tasks Neutralized", value: "47", icon: CheckSquare, change: "8 total pending" },
-    { label: "Auto-Emails Sent", value: "156", icon: Mail, change: "+23 this month" },
-  ];
+  // Calculate real stats from actual data
+  const calculateRealStats = () => {
+    const totalClients = clients.length;
+    const completedClients = clients.filter(c => c.status === 'completed').length;
+    const inProgressClients = clients.filter(c => c.status === 'in_progress').length;
+    const completionRate = totalClients > 0 ? Math.round((completedClients / totalClients) * 100) : 0;
+    
+    // Calculate total tasks and completed tasks
+    const totalTasks = clients.reduce((sum, client) => sum + (client.tasks?.length || 0), 0);
+    const completedTasks = clients.reduce((sum, client) => 
+      sum + (client.tasks?.filter(t => t.completed).length || 0), 0
+    );
+    
+    // Get email transmissions
+    const transmissions = store.getTransmissions();
+    const sentEmails = transmissions.filter(t => t.status === 'sent').length;
+
+    return [
+      { 
+        label: "Active Clients", 
+        value: totalClients.toString(), 
+        icon: Users, 
+        change: `+${inProgressClients} this week` 
+      },
+      { 
+        label: "Completion Rate", 
+        value: `${completionRate}%`, 
+        icon: Zap, 
+        change: completedClients > 0 ? "Active" : "Needs attention" 
+      },
+      { 
+        label: "Tasks Completed", 
+        value: completedTasks.toString(), 
+        icon: CheckSquare, 
+        change: `${totalTasks - completedTasks} pending` 
+      },
+      { 
+        label: "Emails Sent", 
+        value: sentEmails.toString(), 
+        icon: Mail, 
+        change: "This month" 
+      },
+    ];
+  };
+
+  const stats = calculateRealStats();
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -166,16 +208,19 @@ const Dashboard = () => {
       case "Dashboard":
         return (
           <>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
-                <ActivationPulse analytics={analytics} />
-                <LiveOnboardingFunnel funnel={analytics.funnel} />
-                <FailingSteps steps={failingSteps} />
-                <DashboardOverview clients={clients} stats={stats} getStatusIcon={getStatusIcon} getStatusLabel={getStatusLabel} />
-                <RecentEvents />
-              </div>
-              <div>
-                <UserSegments />
+            <div className="space-y-6">
+              <DashboardMetrics analytics={analytics} failingSteps={failingSteps} />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2">
+                  <ActivationPulse analytics={analytics} />
+                  <LiveOnboardingFunnel funnel={analytics.funnel} />
+                  <FailingSteps steps={failingSteps} />
+                  <DashboardOverview clients={clients} stats={stats} getStatusIcon={getStatusIcon} getStatusLabel={getStatusLabel} />
+                  <RecentEvents />
+                </div>
+                <div>
+                  <UserSegments />
+                </div>
               </div>
             </div>
           </>
@@ -306,24 +351,24 @@ const Dashboard = () => {
       {/* Main Workspace */}
       <main className="flex-1 min-w-0 relative p-1.5 md:p-2 flex flex-col">
         <div className="flex-1 bg-[#14151b]/40 md:backdrop-blur-3xl md:border md:border-white/5 md:rounded-[1rem] flex flex-col overflow-hidden shadow-2xl">
-          <header className="h-11 border-b border-white/5 flex items-center justify-between px-4 bg-white/[0.01]">
-            <div className="flex items-center gap-2">
+          <header className="h-14 md:h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-6 bg-white/[0.02]">
+            <div className="flex items-center gap-2 md:gap-4">
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 className="md:hidden text-white/20 hover:text-white transition-colors"
               >
-                <Menu className="w-4 h-4" />
+                <Menu className="w-5 h-5" />
               </button>
-              <div className="w-0.5 h-3 bg-accent rounded-full" />
-              <h1 className="text-[11px] font-black uppercase tracking-widest text-white/80">{activeTab}</h1>
+              <div className="w-0.5 h-4 md:h-5 bg-accent rounded-full" />
+              <h1 className="text-xs md:text-sm font-black uppercase tracking-widest text-white/90">{activeTab}</h1>
             </div>
-            <div className="flex items-center gap-2 md:gap-3">
+            <div className="flex items-center gap-2 md:gap-4">
               <div className="hidden lg:flex relative group">
-                <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-accent" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-accent" />
                 <Input
-                  placeholder="Registry search..."
-                  className="w-32 bg-white/5 border-transparent h-6 text-[9px] pl-7 rounded-md focus-visible:ring-accent/10 focus-visible:w-48 transition-all"
+                  placeholder="Search clients, tasks..."
+                  className="w-32 md:w-48 bg-white/5 border-transparent h-8 text-[10px] pl-9 rounded-md focus-visible:ring-accent/10 focus-visible:w-64 transition-all"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -336,18 +381,16 @@ const Dashboard = () => {
                   if (activeTab === "Tasks") setIsNewTaskDialogOpen(true);
                   if (activeTab === "Templates") toast.info("Forge Active");
                 }}
-                className="h-6 px-2 md:px-2.5 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-glow"
+                className="h-8 px-3 md:px-4 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest shadow-glow"
               >
-                <Plus className="w-3 h-3 mr-1" />
+                <Plus className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">
                   {activeTab === "Tasks" ? "Assign" : activeTab === "Templates" ? "Forge" : "Integrate"}
                 </span>
                 <span className="sm:hidden">+</span>
               </Button>
               <div className="flex items-center gap-2 border-l border-white/5 pl-3">
-                <Button variant="ghost" size="icon" className="h-6 w-6 text-white/20 hover:text-white">
-                  <Bell className="w-3.5 h-3.5" />
-                </Button>
+                <Notifications />
               </div>
             </div>
           </header>

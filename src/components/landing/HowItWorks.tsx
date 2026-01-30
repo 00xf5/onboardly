@@ -1,61 +1,51 @@
 const HowItWorks = () => {
   const steps = [
     {
-      number: "01",
-      title: "Create your template",
-      description: "Build your onboarding workflow with tasks, forms, and email templates. Customize everything to match your brand.",
+      number: "1",
+      title: "Define your activation checklist",
+      description: "What does it mean for a user to be activated? Define the steps that matter.",
     },
     {
-      number: "02",
-      title: "Share with clients",
-      description: "Send a personalized link or embed the form on your website. Clients complete it in minutes.",
+      number: "2",
+      title: "Trigger onboarding contextually",
+      description: "Show help when users need it, not when they don't.",
     },
     {
-      number: "03",
-      title: "Automate & track",
-      description: "Emails send automatically. Track progress, get reminders, and see everything in your dashboard.",
+      number: "3",
+      title: "See where users fail — fix it",
+      description: "Get real data on where users drop off and what to fix.",
     },
   ];
 
   return (
-    <section id="how-it-works" className="section-padding bg-secondary/50">
-      <div className="container mx-auto">
-        {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-20">
-          <span className="text-sm font-semibold text-accent uppercase tracking-widest">
+    <section className="py-24 bg-background">
+      <div className="container mx-auto px-6">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-16 text-center">
             How it works
-          </span>
-          <h2 className="font-display text-4xl sm:text-5xl font-bold text-foreground mt-4 mb-6 leading-tight">
-            Get started in minutes
           </h2>
-          <p className="text-lg text-muted-foreground">
-            From setup to automated onboarding — it's that simple.
-          </p>
-        </div>
-
-        {/* Steps */}
-        <div className="relative max-w-5xl mx-auto">
-          {/* Connection line */}
-          <div className="hidden lg:block absolute top-24 left-[calc(16.67%-1px)] right-[calc(16.67%-1px)] h-px bg-border" />
           
-          <div className="grid lg:grid-cols-3 gap-12 lg:gap-8">
+          <div className="space-y-12">
             {steps.map((step, index) => (
-              <div key={index} className="relative text-center lg:text-left">
-                {/* Step number */}
-                <div className="inline-flex lg:flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground font-display font-bold text-lg mb-6 relative z-10">
+              <div key={index} className="flex gap-8 items-center">
+                <div className="w-16 h-16 rounded-full bg-accent text-white flex items-center justify-center text-2xl font-bold flex-shrink-0">
                   {step.number}
                 </div>
-                
-                <h3 className="font-display text-2xl font-semibold text-foreground mb-4">
-                  {step.title}
-                </h3>
-                
-                <p className="text-muted-foreground leading-relaxed max-w-sm mx-auto lg:mx-0">
-                  {step.description}
-                </p>
+                <div>
+                  <h3 className="text-2xl font-semibold text-foreground mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-xl text-muted-foreground">
+                    {step.description}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
+          
+          <p className="text-center text-muted-foreground mt-16 text-lg">
+            That's it. If it takes more steps, your product is lying.
+          </p>
         </div>
       </div>
     </section>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Zap, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,11 +17,28 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Authentication will be implemented with Lovable Cloud
-    setTimeout(() => {
+    
+    try {
+      const response = await fetch('/api/auth-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (data.ok) {
+        // Store user in localStorage for session
+        localStorage.setItem('onboardly_user', JSON.stringify(data.user));
+        navigate("/dashboard");
+      } else {
+        toast.error(data.error || 'Login failed');
+      }
+    } catch (error) {
+      toast.error('Network error. Please try again.');
+    } finally {
       setIsLoading(false);
-      navigate("/dashboard");
-    }, 1000);
+    }
   };
 
   return (
@@ -68,6 +86,30 @@ const Login = () => {
                 <a
                   href="#"
                   className="text-sm text-accent hover:underline"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    if (!email) {
+                      toast.error('Please enter your email first');
+                      return;
+                    }
+                    
+                    try {
+                      const response = await fetch('/api/auth-forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                      });
+                      
+                      const data = await response.json();
+                      if (data.ok) {
+                        toast.success(data.message);
+                      } else {
+                        toast.error(data.error || 'Failed to send reset email');
+                      }
+                    } catch (error) {
+                      toast.error('Network error. Please try again.');
+                    }
+                  }}
                 >
                   Forgot password?
                 </a>

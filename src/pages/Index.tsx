@@ -1,20 +1,26 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
-import Features from "@/components/landing/Features";
+import Pain from "@/components/landing/Pain";
+import Solution from "@/components/landing/Solution";
+import DashboardShowcase from "@/components/landing/DashboardShowcase";
 import HowItWorks from "@/components/landing/HowItWorks";
-import Pricing from "@/components/landing/Pricing";
-import CTA from "@/components/landing/CTA";
+import TargetAudience from "@/components/landing/TargetAudience";
+import TechConfidence from "@/components/landing/TechConfidence";
+import FinalCTA from "@/components/landing/FinalCTA";
 import Footer from "@/components/landing/Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-[var(--viewport-height)] bg-background">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
-      <Features />
+      <Pain />
+      <Solution />
+      <DashboardShowcase />
       <HowItWorks />
-      <Pricing />
-      <CTA />
+      <TargetAudience />
+      <TechConfidence />
+      <FinalCTA />
       <Footer />
     </div>
   );

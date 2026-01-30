@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Zap, ArrowLeft, Eye, EyeOff, Check } from "lucide-react";
+import { toast } from "sonner";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -26,11 +27,29 @@ const Signup = () => {
     e.preventDefault();
     if (!agreed) return;
     setIsLoading(true);
-    // Registration will be implemented
-    setTimeout(() => {
+    
+    try {
+      const response = await fetch('/api/auth-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (data.ok) {
+        // Store user in localStorage for session
+        localStorage.setItem('onboardly_user', JSON.stringify(data.user));
+        toast.success('Account created successfully!');
+        navigate("/dashboard");
+      } else {
+        toast.error(data.error || 'Signup failed');
+      }
+    } catch (error) {
+      toast.error('Network error. Please try again.');
+    } finally {
       setIsLoading(false);
-      navigate("/dashboard");
-    }, 1000);
+    }
   };
 
   return (
