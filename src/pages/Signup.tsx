@@ -92,7 +92,7 @@ const Signup = () => {
 
           <div className="mb-8">
             <Link to="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-accent p-1 flex items-center justify-center">
                 <Zap className="w-6 h-6 text-accent-foreground" />
               </div>
               <span className="text-2xl font-bold text-foreground">Onboardly</span>
@@ -100,6 +100,16 @@ const Signup = () => {
             <h1 className="text-2xl font-bold text-foreground mb-2">Create your account</h1>
             <p className="text-muted-foreground">
               Get started with your free account today
+            </p>
+          </div>
+
+          {/* Demo Credentials Notice */}
+          <div className="mb-6 p-4 bg-accent/10 border border-accent/20 rounded-lg">
+            <p className="text-sm text-accent-foreground mb-2">
+              <strong>Quick Start:</strong>
+            </p>
+            <p className="text-xs text-accent-foreground font-mono">
+              Use demo@onboardly.app / demo123 for instant access
             </p>
           </div>
 

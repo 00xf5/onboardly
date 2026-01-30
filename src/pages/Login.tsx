@@ -67,6 +67,17 @@ const Login = () => {
             </p>
           </div>
 
+          {/* Demo Credentials Notice */}
+          <div className="mb-6 p-4 bg-accent/10 border border-accent/20 rounded-lg">
+            <p className="text-sm text-accent-foreground mb-2">
+              <strong>Demo Credentials:</strong>
+            </p>
+            <p className="text-xs text-accent-foreground font-mono">
+              Email: demo@onboardly.app<br />
+              Password: demo123
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

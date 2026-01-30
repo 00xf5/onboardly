@@ -20,7 +20,6 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
-  Zap,
   LayoutDashboard,
   Settings as SettingsIcon
 } from "lucide-react";
@@ -46,13 +45,8 @@ import {
 import { toast } from "sonner";
 import { navItems, initialClients } from "./dashboard/constants";
 import { store } from "@/lib/store";
-import { DashboardOverview } from "./dashboard/Overview";
-import ActivationPulse from './dashboard/ActivationPulse';
 import LiveOnboardingFunnel from './dashboard/LiveOnboardingFunnel';
 import FailingSteps from './dashboard/FailingSteps';
-import UserSegments from './dashboard/UserSegments';
-import RecentEvents from './dashboard/RecentEvents';
-import FlowsView from './dashboard/FlowsView';
 import { ClientsView } from "./dashboard/Clients";
 import { EmailsView } from "./dashboard/Emails";
 import { TasksView } from "./dashboard/Tasks";
@@ -134,55 +128,14 @@ const Dashboard = () => {
     setIsNewClientDialogOpen(false);
   };
 
-  const analytics = store.getAnalytics('default-proj');
-  const failingSteps = store.getFailingSteps('default-proj');
-
-  // Calculate real stats from actual data
-  const calculateRealStats = () => {
-    const totalClients = clients.length;
-    const completedClients = clients.filter(c => c.status === 'completed').length;
-    const inProgressClients = clients.filter(c => c.status === 'in_progress').length;
-    const completionRate = totalClients > 0 ? Math.round((completedClients / totalClients) * 100) : 0;
-    
-    // Calculate total tasks and completed tasks
-    const totalTasks = clients.reduce((sum, client) => sum + (client.tasks?.length || 0), 0);
-    const completedTasks = clients.reduce((sum, client) => 
-      sum + (client.tasks?.filter(t => t.completed).length || 0), 0
-    );
-    
-    // Get email transmissions
-    const transmissions = store.getTransmissions();
-    const sentEmails = transmissions.filter(t => t.status === 'sent').length;
-
-    return [
-      { 
-        label: "Active Clients", 
-        value: totalClients.toString(), 
-        icon: Users, 
-        change: `+${inProgressClients} this week` 
-      },
-      { 
-        label: "Completion Rate", 
-        value: `${completionRate}%`, 
-        icon: Zap, 
-        change: completedClients > 0 ? "Active" : "Needs attention" 
-      },
-      { 
-        label: "Tasks Completed", 
-        value: completedTasks.toString(), 
-        icon: CheckSquare, 
-        change: `${totalTasks - completedTasks} pending` 
-      },
-      { 
-        label: "Emails Sent", 
-        value: sentEmails.toString(), 
-        icon: Mail, 
-        change: "This month" 
-      },
-    ];
+  const handleLogout = () => {
+    localStorage.removeItem('onboardly_user');
+    navigate('/login');
+    toast.success('Logged out successfully');
   };
 
-  const stats = calculateRealStats();
+  const analytics = store.getAnalytics('default-proj');
+  const failingSteps = store.getFailingSteps('default-proj');
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -212,10 +165,8 @@ const Dashboard = () => {
               <DashboardMetrics analytics={analytics} failingSteps={failingSteps} />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <ActivationPulse analytics={analytics} />
                   <LiveOnboardingFunnel funnel={analytics.funnel} />
                   <FailingSteps steps={failingSteps} />
-                  <DashboardOverview clients={clients} stats={stats} getStatusIcon={getStatusIcon} getStatusLabel={getStatusLabel} />
                   <RecentEvents />
                 </div>
                 <div>
@@ -391,6 +342,15 @@ const Dashboard = () => {
               </Button>
               <div className="flex items-center gap-2 border-l border-white/5 pl-3">
                 <Notifications />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleLogout}
+                  className="h-6 w-6 text-white/20 hover:text-white"
+                  title="Logout"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </Button>
               </div>
             </div>
           </header>

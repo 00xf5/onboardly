@@ -7,32 +7,50 @@ export default async function handler(req: any, res: any) {
     const { name, email, password } = req.body;
     
     if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Name, email and password required' });
+      return res.status(400).json({ error: 'Name, email and password are required' });
+    }
+
+    // Basic validation
+    if (name.length < 2) {
+      return res.status(400).json({ error: 'Name must be at least 2 characters' });
+    }
+
+    if (!email.includes('@') || email.length < 5) {
+      return res.status(400).json({ error: 'Please enter a valid email address' });
     }
 
     if (password.length < 8) {
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
     }
 
+    // Check if user already exists
+    let userExists = false;
+    
+    if (firestore) {
+      const usersRef = firestore.collection('users');
+      const snapshot = await usersRef.where('email', '==', email).limit(1).get();
+      userExists = !snapshot.empty;
+    } else {
+      // For local demo, check against some demo data
+      const demoEmails = ['demo@onboardly.app', 'admin@onboardly.app', 'test@onboardly.app'];
+      userExists = demoEmails.includes(email);
+    }
+
+    if (userExists) {
+      return res.status(400).json({ error: 'User with this email already exists' });
+    }
+
+    // Create new user
     let user = null;
     
     if (firestore) {
-      // Check if user already exists
       const usersRef = firestore.collection('users');
-      const snapshot = await usersRef.where('email', '==', email).limit(1).get();
-      
-      if (!snapshot.empty) {
-        return res.status(400).json({ error: 'User already exists' });
-      }
-
-      // Create new user
       const newUser = {
         name,
         email,
         createdAt: new Date().toISOString(),
         plan: 'free'
       };
-      
       const docRef = await usersRef.add(newUser);
       user = { ...newUser, id: docRef.id };
     } else {
