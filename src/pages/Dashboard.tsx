@@ -47,6 +47,7 @@ import { navItems, initialClients } from "./dashboard/constants";
 import { store } from "@/lib/store";
 import LiveOnboardingFunnel from './dashboard/LiveOnboardingFunnel';
 import FailingSteps from './dashboard/FailingSteps';
+import RecentEvents from './dashboard/RecentEvents';
 import { ClientsView } from "./dashboard/Clients";
 import { EmailsView } from "./dashboard/Emails";
 import { TasksView } from "./dashboard/Tasks";
