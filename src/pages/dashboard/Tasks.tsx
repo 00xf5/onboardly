@@ -60,7 +60,9 @@ export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsA
 
     const handleAddTask = () => {
         if (!newTask.title || !newTask.client) return;
-        store.addTaskToClient(newTask.client, { title: newTask.title, priority: newTask.priority, due: newTask.due, description: "New operational objective." });
+        // Convert string client ID back to number for store methods
+        const clientId = typeof newTask.client === 'string' ? parseInt(newTask.client, 10) : newTask.client;
+        store.addTaskToClient(clientId, { title: newTask.title, priority: newTask.priority, due: newTask.due, description: "New operational objective." });
         setIsAddDialogOpen(false);
         setNewTask({ title: "", client: "", priority: "med", due: "Asap" });
         toast.success("Objective Manifested");
