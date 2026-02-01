@@ -17,9 +17,9 @@ export const LockedFeature = ({ title, description }: LockedFeatureProps) => {
 
             {/* Lock Icon Hub */}
             <div className="relative mb-8">
-                <div className="w-20 h-20 rounded-full border border-white/5 flex items-center justify-center relative">
+                <div className="w-20 h-20 rounded-full border border-border flex items-center justify-center relative">
                     <div className="absolute inset-0 rounded-full border-t border-accent/20 animate-spin duration-[4000ms]" />
-                    <div className="w-12 h-12 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center shadow-glow">
+                    <div className="w-12 h-12 rounded-xl bg-card border border-border flex items-center justify-center shadow-glow">
                         <Lock className="w-6 h-6 text-accent animate-pulse" />
                     </div>
                 </div>
@@ -32,11 +32,11 @@ export const LockedFeature = ({ title, description }: LockedFeatureProps) => {
 
             {/* Copy */}
             <div className="relative space-y-3 max-w-sm mb-8">
-                <h3 className="text-xl font-black uppercase tracking-tight text-white italic">
+                <h3 className="text-xl font-black uppercase tracking-tight text-foreground italic">
                     Feature <span className="text-accent underline decoration-accent/20">Restricted</span>
                 </h3>
-                <p className="text-[11px] font-black uppercase tracking-widest text-white/30 leading-relaxed">
-                    The {title} suite is an <span className="text-white/60">advanced nexus capability</span>. {description}
+                <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/50 leading-relaxed">
+                    The {title} suite is an <span className="text-foreground/60">advanced nexus capability</span>. {description}
                 </p>
             </div>
 
@@ -58,7 +58,7 @@ export const LockedFeature = ({ title, description }: LockedFeatureProps) => {
                 </Button>
             </div>
 
-            <p className="mt-4 text-[7px] font-black uppercase tracking-widest text-white/10 italic">Tier Verification Required for Access</p>
+            <p className="mt-4 text-[7px] font-black uppercase tracking-widest text-muted-foreground/20 italic">Tier Verification Required for Access</p>
         </div>
     );
 };

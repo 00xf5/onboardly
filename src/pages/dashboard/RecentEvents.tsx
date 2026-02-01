@@ -37,18 +37,27 @@ const RecentEvents = ({ user }: { user: any }) => {
   };
 
   return (
-    <div className="bg-white/5 p-6 rounded-lg mt-8">
-      <h2 className="text-lg font-bold text-white mb-4">Recent Events</h2>
-      <div className="space-y-4">
-        {events.slice(0, 5).map((event) => (
-          <div key={event.id} className="flex items-center justify-between">
-            <div className="flex items-center">
-              {getEventIcon(event.name)}
-              <p className="ml-3 text-white text-sm">{event.name}</p>
+    <div className="bg-card/40 backdrop-blur-3xl p-6 rounded-2xl border border-border mt-8">
+      <h2 className="text-sm font-black text-foreground uppercase tracking-widest mb-6">Live Nexus Feed</h2>
+      <div className="space-y-5">
+        {events.length === 0 ? (
+          <p className="text-[10px] text-muted-foreground italic uppercase tracking-tighter">Waiting for partner signals...</p>
+        ) : (
+          events.slice(0, 5).map((event) => (
+            <div key={event.id} className="flex items-center justify-between group">
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center transition-colors group-hover:bg-accent/10">
+                  {getEventIcon(event.name)}
+                </div>
+                <div className="ml-3">
+                  <p className="text-[11px] font-bold text-foreground group-hover:text-accent transition-colors">{event.name}</p>
+                  <p className="text-[9px] text-muted-foreground/30 uppercase font-black tracking-tighter italic">Relay trace: {event.id.slice(0, 8)}</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground/40 font-medium italic">{formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}</p>
             </div>
-            <p className="text-sm text-white/50">{formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}</p>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

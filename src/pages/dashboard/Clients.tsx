@@ -38,12 +38,12 @@ export const ClientsView = React.memo(function ClientsView({
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
             {/* 🔮 Control Bar */}
-            <div className="bg-[#1a1b23]/40 backdrop-blur-3xl rounded-xl border border-white/5 p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="bg-card/40 backdrop-blur-3xl rounded-xl border border-border p-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="relative flex-1 max-w-xs group">
-                    <Search className="w-3 h-3 absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-accent transition-colors" />
+                    <Search className="w-3 h-3 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-accent transition-colors" />
                     <input
                         placeholder="Scan Partners..."
-                        className="w-full bg-white/[0.03] border-white/5 rounded-lg h-8 text-[11px] pl-9 pr-4 text-white focus:outline-none focus:ring-1 focus:ring-accent/40 placeholder:text-white/10"
+                        className="w-full bg-muted/30 border-border rounded-lg h-8 text-[11px] pl-9 pr-4 text-foreground focus:outline-none focus:ring-1 focus:ring-accent/40 placeholder:text-muted-foreground/30"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -53,7 +53,7 @@ export const ClientsView = React.memo(function ClientsView({
                         variant="ghost"
                         size="sm"
                         onClick={() => toast.info("Filter Matrix Engaged")}
-                        className="h-8 rounded-lg bg-white/5 border border-white/5 px-2.5 text-[10px] uppercase font-black tracking-widest text-white/40 hover:text-white"
+                        className="h-8 rounded-lg bg-muted border border-border px-2.5 text-[10px] uppercase font-black tracking-widest text-muted-foreground hover:text-foreground"
                     >
                         <Filter className="w-3.5 h-3.5 mr-1.5" />
                         Options
@@ -71,10 +71,10 @@ export const ClientsView = React.memo(function ClientsView({
             </div>
 
             {/* Matrix Table */}
-            <div className="bg-[#1a1b23]/40 backdrop-blur-3xl rounded-xl border border-white/5 overflow-hidden">
+            <div className="bg-card/40 backdrop-blur-3xl rounded-xl border border-border overflow-hidden">
                 <div className="overflow-x-auto p-1.5">
                     <div className="w-full text-left">
-                        <div className="text-white/10 uppercase tracking-[0.2em] text-[8px] font-black border-b border-white/[0.03] grid grid-cols-5 py-3 px-3">
+                        <div className="text-muted-foreground/50 uppercase tracking-[0.2em] text-[8px] font-black border-b border-border/50 grid grid-cols-5 py-3 px-3">
                             <div>Entity</div>
                             <div>Strategy</div>
                             <div>Velocity</div>
@@ -92,40 +92,40 @@ export const ClientsView = React.memo(function ClientsView({
                                 {({ index, style }) => {
                                     const client = filteredClients[index];
                                     return (
-                                        <div style={style} key={client.id} className="grid grid-cols-5 items-center gap-4 px-3 hover:bg-white/[0.01] transition-colors">
+                                        <div style={style} key={client.id} className="grid grid-cols-5 items-center gap-4 px-3 hover:bg-muted/10 transition-colors">
                                             <div className="py-2.5">
                                                 <div className="flex items-center gap-3">
-                                                    <Avatar className="w-7 h-7 rounded-lg ring-1 ring-white/5 group-hover:ring-accent/30 transition-all">
-                                                        <AvatarFallback className="bg-white/5 text-white/40 font-black text-[8px]">
+                                                    <Avatar className="w-7 h-7 rounded-lg ring-1 ring-border group-hover:ring-accent/30 transition-all">
+                                                        <AvatarFallback className="bg-muted text-muted-foreground font-black text-[8px]">
                                                             {client.name.split(' ').map((n: string) => n[0]).join('')}
                                                         </AvatarFallback>
                                                     </Avatar>
                                                     <div className="min-w-0">
-                                                        <p className="text-[11px] font-bold text-white group-hover:text-accent transition-colors">{client.name}</p>
-                                                        <p className="text-[9px] text-white/20 truncate leading-tight mt-0.5 uppercase tracking-tighter">{client.email}</p>
+                                                        <p className="text-[11px] font-bold text-foreground group-hover:text-accent transition-colors">{client.name}</p>
+                                                        <p className="text-[9px] text-muted-foreground truncate leading-tight mt-0.5 uppercase tracking-tighter">{client.email}</p>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="py-2.5">
-                                                <span className="text-[9px] font-bold text-white/40 bg-white/5 border border-white/5 px-2 py-0.5 rounded-md">
+                                                <span className="text-[9px] font-bold text-muted-foreground bg-muted border border-border px-2 py-0.5 rounded-md">
                                                     {client.template}
                                                 </span>
                                             </div>
                                             <div className="py-2.5">
                                                 <div className="flex items-center gap-2 w-28">
-                                                    <div className="h-0.5 flex-1 bg-white/5 rounded-full overflow-hidden">
+                                                    <div className="h-0.5 flex-1 bg-muted rounded-full overflow-hidden">
                                                         <div
                                                             className="h-full bg-accent shadow-glow transition-all duration-1000 ease-out"
                                                             style={{ width: `${client.progress}%` }}
                                                         />
                                                     </div>
-                                                    <span className="text-[9px] font-black text-white italic tracking-tighter">{client.progress}%</span>
+                                                    <span className="text-[9px] font-black text-foreground italic tracking-tighter">{client.progress}%</span>
                                                 </div>
                                             </div>
                                             <div className="py-2.5">
-                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-white/5 rounded-md w-fit border border-white/5">
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-md w-fit border border-border">
                                                     {getStatusIcon(client.status)}
-                                                    <span className="text-[8px] font-black uppercase text-white/40 tracking-widest leading-none">
+                                                    <span className="text-[8px] font-black uppercase text-muted-foreground tracking-widest leading-none">
                                                         {getStatusLabel(client.status)}
                                                     </span>
                                                 </div>
@@ -158,7 +158,7 @@ export const ClientsView = React.memo(function ClientsView({
                                                                 toast.info(`Managing ${client.name}`);
                                                             }
                                                         }}
-                                                        className="h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest text-white/30 hover:text-white hover:bg-white/10"
+                                                        className="h-7 px-3 rounded-lg text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted"
                                                     >
                                                         Manage
                                                     </Button>

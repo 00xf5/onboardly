@@ -57,6 +57,7 @@ import ClientManageDialog from '@/components/dialogs/ClientManageDialog';
 
 import { PageLoader } from "@/components/Loader";
 import { LockedFeature } from "@/components/dashboard/LockedFeature";
+import { ThemeToggle } from "@/components/dashboard/ThemeToggle";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -318,7 +319,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0c10] flex overflow-hidden relative selection:bg-accent/30 leading-tight">
+    <div className="min-h-screen bg-background flex overflow-hidden relative selection:bg-accent/30 leading-tight">
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div
@@ -329,7 +330,7 @@ const Dashboard = () => {
 
       {/* Sidebar */}
       <aside
-        className={`${sidebarOpen ? 'w-52' : 'w-16'} ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative flex flex-col border-r border-white/5 bg-[#0b0c10] transition-all duration-300 z-50 shrink-0 h-full`}
+        className={`${sidebarOpen ? 'w-52' : 'w-16'} ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative flex flex-col border-r border-border bg-background transition-all duration-300 z-50 shrink-0 h-full`}
       >
         <div className="p-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
@@ -345,13 +346,13 @@ const Dashboard = () => {
           </Link>
           <div className="flex items-center gap-2">
             {sidebarOpen && (
-              <button onClick={() => setSidebarOpen(false)} className="hidden md:flex text-white/20 hover:text-white transition-colors">
+              <button onClick={() => setSidebarOpen(false)} className="hidden md:flex text-muted-foreground hover:text-foreground transition-colors">
                 <PanelLeftClose className="w-3.5 h-3.5" />
               </button>
             )}
             <button
               onClick={() => setMobileMenuOpen(false)}
-              className="md:hidden text-white/20 hover:text-white transition-colors"
+              className="md:hidden text-muted-foreground hover:text-foreground transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -377,7 +378,7 @@ const Dashboard = () => {
                 key={item.label}
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-all group ${isActive ? 'bg-accent/10 text-accent shadow-[0_0_15px_rgba(255,107,74,0.05)]' : 'text-white/30 hover:text-white/60 hover:bg-white/[0.02]'
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-all group ${isActive ? 'bg-accent/10 text-accent shadow-[0_0_15px_rgba(255,107,74,0.05)]' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                   }`}
               >
                 <item.icon className="w-4 h-4 shrink-0" />
@@ -387,8 +388,8 @@ const Dashboard = () => {
           })}
         </nav>
 
-        <div className="p-3 border-t border-white/5">
-          <div className={`p-1.5 rounded-xl bg-white/[0.02] flex items-center gap-2 ${!sidebarOpen && 'justify-center'}`}>
+        <div className="p-3 border-t border-border">
+          <div className={`p-1.5 rounded-xl bg-muted/50 flex items-center gap-2 ${!sidebarOpen && 'justify-center'}`}>
             <Avatar className="w-6 h-6 rounded-lg ring-1 ring-white/10">
               <AvatarFallback className="bg-accent/10 text-accent font-bold text-[9px]">
                 {user?.name?.[0] || 'U'}
@@ -396,7 +397,7 @@ const Dashboard = () => {
             </Avatar>
             {sidebarOpen && (
               <div className="min-w-0">
-                <p className="text-[10px] font-bold text-white truncate">{user?.name || 'User'}</p>
+                <p className="text-[10px] font-bold text-foreground truncate">{user?.name || 'User'}</p>
                 <p className="text-[8px] text-accent/40 font-black uppercase tracking-tighter leading-none">{user?.plan || 'Free'}</p>
               </div>
             )}
@@ -406,8 +407,8 @@ const Dashboard = () => {
 
       {/* Main Workspace */}
       <main className="flex-1 min-w-0 relative p-1.5 md:p-2 flex flex-col">
-        <div className="flex-1 bg-[#14151b]/40 md:backdrop-blur-3xl md:border md:border-white/5 md:rounded-[1rem] flex flex-col overflow-hidden shadow-2xl">
-          <header className="h-14 md:h-16 border-b border-white/5 flex items-center justify-between px-4 md:px-6 bg-white/[0.02]">
+        <div className="flex-1 bg-background/40 md:backdrop-blur-3xl md:border md:border-border md:rounded-[1rem] flex flex-col overflow-hidden shadow-2xl">
+          <header className="h-14 md:h-16 border-b border-border flex items-center justify-between px-4 md:px-6 bg-background/50">
             <div className="flex items-center gap-2 md:gap-4">
               {/* Mobile Menu Toggle */}
               <button
@@ -417,11 +418,11 @@ const Dashboard = () => {
                 <Menu className="w-5 h-5" />
               </button>
               <div className="w-0.5 h-4 md:h-5 bg-accent rounded-full" />
-              <h1 className="text-xs md:text-sm font-black uppercase tracking-widest text-white/90">{activeTab}</h1>
+              <h1 className="text-xs md:text-sm font-black uppercase tracking-widest text-foreground/90">{activeTab}</h1>
             </div>
             <div className="flex items-center gap-2 md:gap-4">
               <div className="hidden lg:flex relative group">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-accent" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-accent" />
                 <Input
                   placeholder="Search clients, tasks..."
                   className="w-32 md:w-48 bg-white/5 border-transparent h-8 text-[10px] pl-9 rounded-md focus-visible:ring-accent/10 focus-visible:w-64 transition-all"
@@ -445,13 +446,14 @@ const Dashboard = () => {
                 </span>
                 <span className="sm:hidden">+</span>
               </Button>
-              <div className="flex items-center gap-2 border-l border-white/5 pl-3">
+              <div className="flex items-center gap-2 border-l border-border pl-3">
+                <ThemeToggle />
                 <Notifications />
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleLogout}
-                  className="h-6 w-6 text-white/20 hover:text-white"
+                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
                   title="Logout"
                 >
                   <LogOut className="w-3.5 h-3.5" />
