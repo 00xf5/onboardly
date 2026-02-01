@@ -251,7 +251,7 @@ const Dashboard = () => {
   const isPro = useMemo(() => user?.plan === 'pro', [user]);
 
   const renderContent = () => {
-    const isPremiumTab = ["Flows", "Visual Flow Editor", "Flow Templates", "Insights", "Webhooks"].includes(activeTab);
+    const isPremiumTab = ["Flows", "Visual Flow Editor", "Flow Templates", "Insights"].includes(activeTab);
 
     if (isPremiumTab && !isPro) {
       return (
