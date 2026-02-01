@@ -21,16 +21,16 @@ const Pricing = () => {
     },
     {
       name: "Pro",
-      price: "$99",
+      price: "$15",
       period: "/month",
-      description: "For growing businesses",
+      description: "For rapid growth (23k NGN)",
       features: [
-        "Unlimited templates",
-        "Unlimited clients",
-        "Custom branding",
-        "Scheduled reminders",
-        "Analytics dashboard",
-        "Priority support",
+        "Unlimited Blueprints",
+        "Unlimited Partners",
+        "Nexus Insights Feed",
+        "Visual Flow Engine",
+        "Analytics Dashboard",
+        "Priority Command Support",
       ],
       cta: "Start free trial",
       variant: "accent" as const,
@@ -38,9 +38,9 @@ const Pricing = () => {
     },
     {
       name: "Agency",
-      price: "$199",
+      price: "$30",
       period: "/month",
-      description: "For teams & agencies",
+      description: "For teams & specialized agencies",
       features: [
         "Everything in Pro",
         "White-label branding",
@@ -76,8 +76,8 @@ const Pricing = () => {
             <div
               key={index}
               className={`relative p-8 rounded-3xl border transition-all duration-300 ${plan.popular
-                  ? "bg-primary text-primary-foreground border-primary shadow-float scale-[1.02]"
-                  : "bg-card border-border hover:border-accent/30 hover:shadow-soft"
+                ? "bg-primary text-primary-foreground border-primary shadow-float scale-[1.02]"
+                : "bg-card border-border hover:border-accent/30 hover:shadow-soft"
                 }`}
             >
               {/* Popular Badge */}

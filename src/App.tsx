@@ -17,6 +17,8 @@ const Terms = React.lazy(() => import("./pages/Terms"));
 const Privacy = React.lazy(() => import("./pages/Privacy"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
+import { PageLoader } from "./components/Loader";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -25,7 +27,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+        <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />

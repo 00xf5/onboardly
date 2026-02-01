@@ -91,11 +91,11 @@ export const SettingsView = () => {
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 blur-3xl" />
                                 <div className="flex items-start justify-between mb-1">
                                     <h4 className="text-sm font-black text-white uppercase">Pro</h4>
-                                    <span className="text-accent font-black text-lg tracking-tighter">$99<span className="text-[8px] text-white/40 uppercase font-black ml-1">/mo</span></span>
+                                    <span className="text-accent font-black text-lg tracking-tighter">$15<span className="text-[8px] text-white/40 uppercase font-black ml-1">/mo</span></span>
                                 </div>
-                                <p className="text-[9px] text-white/30 mb-5 font-medium uppercase tracking-tighter">Adv. automation suite</p>
+                                <p className="text-[9px] text-white/30 mb-5 font-medium uppercase tracking-tighter">Adv. automation suite (23,000 NGN/mo)</p>
                                 <ul className="space-y-2 mb-6">
-                                    {['Unlimited Blueprints', 'Unlimited Partners', 'Automated Relays'].map((feature, i) => (
+                                    {['Unlimited Blueprints', 'Unlimited Partners', 'Nexus Insights', 'Visual Flow Engine'].map((feature, i) => (
                                         <li key={i} className="flex items-center gap-2 text-[10px] font-bold text-white/80">
                                             <CheckCircle2 className="w-3 h-3 text-accent" />
                                             {feature}

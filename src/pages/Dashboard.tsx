@@ -56,6 +56,7 @@ import FlowsView from './dashboard/FlowsView';
 import ClientManageDialog from '@/components/dialogs/ClientManageDialog';
 
 import { PageLoader } from "@/components/Loader";
+import { LockedFeature } from "@/components/dashboard/LockedFeature";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -233,26 +234,37 @@ const Dashboard = () => {
     }
   };
 
+  const isPro = useMemo(() => user?.plan === 'pro', [user]);
+
   const renderContent = () => {
+    const isPremiumTab = ["Flows", "Visual Flow Editor", "Flow Templates", "Insights", "Webhooks"].includes(activeTab);
+
+    if (isPremiumTab && !isPro) {
+      return (
+        <LockedFeature
+          title={activeTab}
+          description={`Upgrade to the Pro Tier to unlock the ${activeTab} and orchestrate high-velocity activations.`}
+        />
+      );
+    }
+
     switch (activeTab) {
       case "Dashboard":
         return (
-          <>
-            <div className="space-y-6">
-              <DashboardMetrics analytics={analytics} failingSteps={failingSteps} clients={clients} />
-              <ActivationPulse analytics={analytics} clients={clients} />
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <LiveOnboardingFunnel funnel={analytics.funnel} />
-                  <FailingSteps steps={failingSteps} />
-                  <RecentEvents user={user} />
-                </div>
-                <div>
-                  <UserSegments />
-                </div>
+          <div className="space-y-6">
+            <DashboardMetrics analytics={analytics} failingSteps={failingSteps} clients={clients} />
+            <ActivationPulse analytics={analytics} clients={clients} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <LiveOnboardingFunnel funnel={analytics.funnel} />
+                <FailingSteps steps={failingSteps} />
+                <RecentEvents user={user} />
+              </div>
+              <div>
+                <UserSegments />
               </div>
             </div>
-          </>
+          </div>
         );
       case "Clients":
         return <ClientsView

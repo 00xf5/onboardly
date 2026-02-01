@@ -22,16 +22,16 @@ const Pricing = () => {
     },
     {
       name: "Pro",
-      price: "$99",
-      description: "For growing teams that need more power",
+      price: "$15",
+      description: "For rapid growth teams (23,000 NGN)",
       features: [
-        "Up to 100 partners",
-        "Advanced flow builder",
-        "Custom branding",
-        "API access",
-        "Priority support",
-        "Analytics dashboard",
-        "Integrations"
+        "Unlimited Blueprints",
+        "Unlimited Partners",
+        "Nexus Insights Feed",
+        "Visual Flow Engine",
+        "Priority Command Support",
+        "Analytics Dashboard",
+        "Advanced Integrations"
       ],
       highlighted: true,
       cta: "Start Free Trial"
@@ -96,13 +96,12 @@ const Pricing = () => {
           {/* Pricing Cards */}
           <div className="grid md:grid-cols-3 gap-8 mb-20">
             {plans.map((plan, index) => (
-              <div 
-                key={index} 
-                className={`relative bg-card border rounded-xl p-8 hover:shadow-lg transition-shadow ${
-                  plan.highlighted 
-                    ? 'border-accent shadow-accent/20' 
+              <div
+                key={index}
+                className={`relative bg-card border rounded-xl p-8 hover:shadow-lg transition-shadow ${plan.highlighted
+                    ? 'border-accent shadow-accent/20'
                     : 'border-border'
-                }`}
+                  }`}
               >
                 {plan.highlighted && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -112,7 +111,7 @@ const Pricing = () => {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="text-center mb-8">
                   <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
                   <div className="text-4xl font-bold mb-2">
@@ -131,8 +130,8 @@ const Pricing = () => {
                   ))}
                 </div>
 
-                <Button 
-                  variant={plan.highlighted ? "accent" : "outline"} 
+                <Button
+                  variant={plan.highlighted ? "accent" : "outline"}
                   className="w-full"
                   asChild
                 >

@@ -64,11 +64,11 @@ const Login = () => {
           </Link>
 
           <div className="mb-8">
-            <Link to="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-                <Zap className="w-6 h-6 text-accent-foreground" />
+            <Link to="/" className="flex items-center gap-2.5 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-orange-500 p-1 flex items-center justify-center shadow-glow">
+                <img src="/assets/brand/logo.png" alt="Onboardly" className="w-full h-full object-contain" />
               </div>
-              <span className="text-2xl font-bold text-foreground">Onboardly</span>
+              <span className="text-2xl font-display font-black tracking-tight text-white uppercase italic">Onboardly <span className="text-accent underline decoration-accent/20">Nexus</span></span>
             </Link>
             <h1 className="text-2xl font-bold text-foreground mb-2">Welcome back</h1>
             <p className="text-muted-foreground">
@@ -163,8 +163,8 @@ const Login = () => {
       {/* Right side - Decorative */}
       <div className="hidden lg:flex flex-1 hero-gradient items-center justify-center p-12">
         <div className="max-w-md text-center">
-          <div className="w-20 h-20 rounded-2xl bg-accent/20 flex items-center justify-center mx-auto mb-8">
-            <Zap className="w-10 h-10 text-accent" />
+          <div className="w-24 h-24 rounded-2xl bg-orange-500 p-3 shadow-glow flex items-center justify-center mx-auto mb-8">
+            <img src="/assets/brand/logo.png" alt="Onboardly" className="w-full h-full object-contain" />
           </div>
           <h2 className="text-3xl font-bold text-primary-foreground mb-4">
             Streamline your onboarding
