@@ -17,9 +17,12 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import OptimizedImage from "@/components/OptimizedImage";
+import { PageLoader } from "@/components/Loader";
 
 const PublicOnboarding = () => {
     const { id } = useParams();
+    const [loading, setLoading] = useState(true);
+    const [clientOwnerId, setClientOwnerId] = useState<string | null>(null);
     const [step, setStep] = useState(1); // 1: Form, 2: Tasks, 3: Success
     const [formData, setFormData] = useState({ name: "", company: "", email: "" });
     const [tasks, setTasks] = useState([
@@ -32,7 +35,10 @@ const PublicOnboarding = () => {
     const progress = (tasks.filter(t => t.completed).length / tasks.length) * 100;
 
     useEffect(() => {
-        if (!id) return;
+        if (!id) {
+            setLoading(false);
+            return;
+        }
 
         const fetchClient = async () => {
             const { collection, query, where, getDocs } = await import("firebase/firestore");
@@ -41,11 +47,13 @@ const PublicOnboarding = () => {
             const snap = await getDocs(q);
 
             if (!snap.empty) {
-                const found = { ...(snap.docs[0].data() as any), id: snap.docs[0].id };
+                const found = snap.docs[0].data();
                 setFormData({ name: found.name, company: found.company || "", email: found.email });
                 setTasks(found.tasks && found.tasks.length ? found.tasks : tasks);
+                setClientOwnerId(found.userId || null);
                 setStep(2);
             }
+            setLoading(false);
         };
 
         fetchClient();
@@ -53,68 +61,55 @@ const PublicOnboarding = () => {
 
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name) return;
-
-        const { collection, addDoc } = await import("firebase/firestore");
-        const { db } = await import("@/lib/firebase");
-
-        toast.promise((async () => {
-            const clientObj = {
-                name: formData.name,
-                email: formData.email,
-                company: formData.company,
-                slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-                tasks,
-                progress: (tasks.filter(t => t.completed).length / tasks.length) * 100,
-                status: "in_progress",
-                createdAt: new Date().toISOString(),
-                lastActivity: "Just now",
-            };
-
-            await addDoc(collection(db, "clients"), clientObj);
-
-            // Trigger local step change
-            setStep(2);
-            return 'Integration Established';
-        })(), {
-            loading: 'Initializing Nexus...',
-            success: (msg) => msg,
-            error: 'Link error',
-        });
+        setStep(2);
+        toast.info("Test Mode: Data not persisted without valid invite link.");
     };
 
     const toggleTask = async (taskId: number) => {
+        const targetTask = tasks.find(t => t.id === taskId);
         const newTasks = tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
         setTasks(newTasks);
 
-        // If we have an id (slug), update in firestore too
         if (id) {
-            const { collection, query, where, getDocs, updateDoc, doc } = await import("firebase/firestore");
+            const { collection, query, where, getDocs, updateDoc, doc, addDoc } = await import("firebase/firestore");
             const { db } = await import("@/lib/firebase");
             const q = query(collection(db, "clients"), where("slug", "==", id));
             const snap = await getDocs(q);
+
             if (!snap.empty) {
                 const clientDoc = snap.docs[0];
-                const progress = (newTasks.filter(t => t.completed).length / newTasks.length) * 100;
+                const newProgress = (newTasks.filter(t => t.completed).length / newTasks.length) * 100;
+
                 await updateDoc(doc(db, "clients", clientDoc.id), {
                     tasks: newTasks,
-                    progress,
-                    lastActivity: "Updated task"
+                    progress: newProgress,
+                    lastActivity: targetTask?.completed ? "Reopened task" : "Completed task"
                 });
+
+                if (clientOwnerId) {
+                    await addDoc(collection(db, "events"), {
+                        userId: clientOwnerId,
+                        type: !targetTask?.completed ? "completion" : "regression",
+                        title: !targetTask?.completed ? "Task Accomplished" : "Task Reopened",
+                        description: `${formData.name} ${!targetTask?.completed ? 'completed' : 'reverted'} "${targetTask?.title}"`,
+                        timestamp: new Date().toISOString(),
+                        clientId: clientDoc.id
+                    });
+                }
             }
         }
     };
 
+    if (loading) return <PageLoader />;
+
     return (
         <div className="min-h-screen bg-[#0b0c10] text-white selection:bg-accent/30 font-sans flex items-center justify-center p-4">
-            {/* Ambient Background */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[-5%] left-[-5%] w-[30%] h-[30%] bg-accent/5 rounded-full blur-[100px]" />
                 <div className="absolute bottom-[-5%] right-[-5%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[100px]" />
             </div>
 
             <div className="relative w-full max-w-4xl">
-                {/* Minimal Header */}
                 <header className="flex items-center justify-between mb-8 px-2">
                     <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-lg bg-accent p-1 shadow-glow shrink-0">
@@ -174,7 +169,6 @@ const PublicOnboarding = () => {
                         </Card>
                     ) : (
                         <div className="grid lg:grid-cols-12 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            {/* Objectives Grid */}
                             <div className="lg:col-span-8 space-y-3">
                                 <div className="flex items-center justify-between mb-4 px-2">
                                     <h2 className="text-[9px] font-black uppercase tracking-widest text-white/20">Operational Objectives</h2>
@@ -189,8 +183,7 @@ const PublicOnboarding = () => {
                                     >
                                         <div className="flex items-center justify-between gap-4">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-9 h-9 rounded-lg border flex items-center justify-center transition-all ${task.completed ? 'border-success bg-success/10' : 'border-white/5 bg-white/5 group-hover:bg-accent/10'
-                                                    }`}>
+                                                <div className={`w-9 h-9 rounded-lg border flex items-center justify-center transition-all ${task.completed ? 'border-success bg-success/10' : 'border-white/5 bg-white/5 group-hover:bg-accent/10'}`}>
                                                     {task.completed ? <CheckCircle2 className="w-5 h-5 text-success" /> : <ShieldCheck className="w-5 h-5 text-accent/60" />}
                                                 </div>
                                                 <div>
@@ -204,7 +197,6 @@ const PublicOnboarding = () => {
                                 ))}
                             </div>
 
-                            {/* Control Sidebar */}
                             <div className="lg:col-span-4 space-y-4">
                                 <div className="p-6 bg-[#1a1b23]/40 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl relative overflow-hidden group">
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 blur-2xl rounded-full" />

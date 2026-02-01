@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 import { PageLoader } from '@/components/Loader';
 
-const VisualFlowEditorView = () => {
+const VisualFlowEditorView = ({ user }: { user: any }) => {
   const [flows, setFlows] = useState<any[]>([]);
   const [selectedFlow, setSelectedFlow] = useState<any | null>(null);
   const [isStepDialogOpen, setIsStepDialogOpen] = useState(false);
@@ -18,10 +18,14 @@ const VisualFlowEditorView = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const syncFlows = async () => {
-      const { collection, onSnapshot } = await import("firebase/firestore");
+      const { collection, query, where, onSnapshot } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
-      const unsubscribe = onSnapshot(collection(db, "flows"), (snapshot) => {
+
+      const q = query(collection(db, "flows"), where("userId", "==", user.id));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
         const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         setFlows(list);
 

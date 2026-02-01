@@ -15,26 +15,34 @@ import { Label } from "@/components/ui/label";
 
 import { PageLoader } from "@/components/Loader";
 
-export const EmailsView = React.memo(() => {
+export const EmailsView = React.memo(({ user }: { user: any }) => {
     const [templates, setTemplates] = useState<any[]>([]);
     const [transmissions, setTransmissions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!user?.id) return;
+
         const syncTemplates = async () => {
-            const { collection, onSnapshot } = await import("firebase/firestore");
+            const { collection, query, where, onSnapshot } = await import("firebase/firestore");
             const { db } = await import("@/lib/firebase");
-            const unsubscribe = onSnapshot(collection(db, "email_templates"), (snapshot) => {
+            const q = query(collection(db, "email_templates"), where("userId", "==", user.id));
+            const unsubscribe = onSnapshot(q, (snapshot) => {
                 setTemplates(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
             });
             return unsubscribe;
         };
 
         const syncTransmissions = async () => {
-            const { collection, query, orderBy, onSnapshot, limit } = await import("firebase/firestore");
+            const { collection, query, where, orderBy, onSnapshot, limit } = await import("firebase/firestore");
             const { db } = await import("@/lib/firebase");
 
-            const q = query(collection(db, "transmissions"), orderBy("sentAt", "desc"), limit(20));
+            const q = query(
+                collection(db, "transmissions"),
+                where("userId", "==", user.id),
+                orderBy("sentAt", "desc"),
+                limit(20)
+            );
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const logs = snapshot.docs.map(doc => {
                     const data = doc.data();
@@ -68,10 +76,11 @@ export const EmailsView = React.memo(() => {
         };
     }, []);
 
-    if (loading) return <PageLoader />;
-
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [newTemplate, setNewTemplate] = useState({ name: "", subject: "" });
+
+    if (loading) return <PageLoader />;
+
 
     const handleCreateTemplate = async () => {
         if (!newTemplate.name) return;
@@ -80,6 +89,7 @@ export const EmailsView = React.memo(() => {
 
         await addDoc(collection(db, "email_templates"), {
             ...newTemplate,
+            userId: user.id,
             trigger: "Manual",
             openRate: "0%",
             status: "draft",

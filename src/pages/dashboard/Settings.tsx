@@ -19,20 +19,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
+
 export const SettingsView = () => {
     const [plan, setPlan] = useState(() => {
         const user = localStorage.getItem('onboardly_user');
         return user ? JSON.parse(user).plan || 'free' : 'free';
     });
+    const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
     const [autoLockout, setAutoLockout] = useState(false);
     const [neuralCryptography, setNeuralCryptography] = useState(true);
 
     const handleUpgrade = async () => {
-        toast.info('Upgrade path shifted to direct checkout. Redirecting to payment portal...');
-        // Stub for future Stripe/LemonSqueezy integration
-        setTimeout(() => {
-            window.open('https://buy.stripe.com/demo', '_blank');
-        }, 1500);
+        setIsPaymentDialogOpen(true);
     };
 
     return (
@@ -85,8 +90,8 @@ export const SettingsView = () => {
                             <div className={`relative p-6 bg-[#1a1b23]/40 rounded-2xl border transition-all overflow-hidden ${plan === 'pro' ? 'border-accent bg-accent/[0.02]' : 'border-white/5 hover:border-accent/20'}`}>
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 blur-3xl" />
                                 <div className="flex items-start justify-between mb-1">
-                                    <h4 className="text-sm font-black text-white uppercase">Enterprise</h4>
-                                    <span className="text-accent font-black text-lg tracking-tighter">$10<span className="text-[8px] text-white/40 uppercase font-black ml-1">/mo</span></span>
+                                    <h4 className="text-sm font-black text-white uppercase">Pro</h4>
+                                    <span className="text-accent font-black text-lg tracking-tighter">$99<span className="text-[8px] text-white/40 uppercase font-black ml-1">/mo</span></span>
                                 </div>
                                 <p className="text-[9px] text-white/30 mb-5 font-medium uppercase tracking-tighter">Adv. automation suite</p>
                                 <ul className="space-y-2 mb-6">
@@ -171,6 +176,29 @@ export const SettingsView = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Payment Portal Dialog */}
+            <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+                <DialogContent className="sm:max-w-[460px] bg-[#1a1b23] border-white/10 text-white rounded-2xl p-0 overflow-hidden shadow-2xl backdrop-blur-3xl min-h-[720px]">
+                    <DialogHeader className="p-6 pb-0">
+                        <DialogTitle className="text-xl font-black tracking-tight uppercase italic">Nexus Tier Upgrade</DialogTitle>
+                        <DialogDescription className="text-white/40 text-[11px]">Authorize the crypto-relay for Pro access.</DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-center items-center py-4 bg-white/[0.02]">
+                        <iframe
+                            src="https://nowpayments.io/embeds/payment-widget?iid=6136362268"
+                            width="410"
+                            height="696"
+                            frameBorder="0"
+                            scrolling="no"
+                            style={{ overflowY: 'hidden', borderRadius: '12px' }}
+                            title="NOWPayments Widget"
+                        >
+                            Can't load widget
+                        </iframe>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

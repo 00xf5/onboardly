@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Rocket, Mic, Code, Wrench, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
-const FlowTemplatesView = () => {
+const FlowTemplatesView = ({ user }: { user: any }) => {
   const [templates, setTemplates] = useState<any[]>([]);
 
   useEffect(() => {
@@ -20,10 +20,12 @@ const FlowTemplatesView = () => {
   }, []);
 
   const handleClone = async (template: any) => {
+    if (!user?.id) return;
     const { collection, addDoc } = await import("firebase/firestore");
     const { db } = await import("@/lib/firebase");
     try {
       await addDoc(collection(db, "flows"), {
+        userId: user.id,
         name: `${template.title} Copy`,
         status: "active",
         createdAt: new Date().toISOString()

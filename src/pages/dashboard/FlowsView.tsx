@@ -4,16 +4,18 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { PageLoader } from '@/components/Loader';
 
-const FlowsView = () => {
+const FlowsView = ({ user }: { user: any }) => {
   const [flows, setFlows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const syncFlows = async () => {
-      const { collection, query, onSnapshot } = await import("firebase/firestore");
+      const { collection, query, where, onSnapshot } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
 
-      const q = query(collection(db, "flows"));
+      const q = query(collection(db, "flows"), where("userId", "==", user.id));
       const unsubscribe = onSnapshot(q, (snapshot) => {
         setFlows(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
         setLoading(false);

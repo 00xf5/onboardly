@@ -138,12 +138,14 @@ export const ClientsView = React.memo(function ClientsView({
                                                         onClick={() => {
                                                             const url = `${window.location.origin}/onboard/${client.slug}`;
                                                             navigator.clipboard.writeText(url);
-                                                            toast.success("Sync Link Copied");
+                                                            toast.success("Invitation Link Copied", {
+                                                                description: `Send this to ${client.name} to start onboarding.`
+                                                            });
                                                         }}
-                                                        className="h-7 w-7 p-0 rounded-lg bg-white/5 border border-white/5 text-white/20 hover:text-accent"
-                                                        title="Copy Link"
+                                                        className="h-8 px-3 rounded-lg bg-accent/5 border border-accent/10 text-accent hover:bg-accent hover:text-white transition-all gap-2 text-[10px] font-black uppercase"
                                                     >
                                                         <LinkIcon className="w-3.5 h-3.5" />
+                                                        Invite
                                                     </Button>
                                                     <Button
                                                         variant="ghost"

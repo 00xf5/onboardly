@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 
 import { PageLoader } from "@/components/Loader";
 
-export const TemplatesView = () => {
+export const TemplatesView = ({ user }: { user: any }) => {
     const [templates, setTemplates] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
@@ -17,10 +17,13 @@ export const TemplatesView = () => {
     const [newTaskTitle, setNewTaskTitle] = useState("");
 
     useEffect(() => {
+        if (!user?.id) return;
+
         const syncTemplates = async () => {
-            const { collection, onSnapshot } = await import("firebase/firestore");
+            const { collection, query, where, onSnapshot } = await import("firebase/firestore");
             const { db } = await import("@/lib/firebase");
-            const unsubscribe = onSnapshot(collection(db, "templates"), (snapshot) => {
+            const q = query(collection(db, "templates"), where("userId", "==", user.id));
+            const unsubscribe = onSnapshot(q, (snapshot) => {
                 const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
                 setTemplates(list);
                 if (list.length > 0 && !selectedTemplate) {
@@ -47,6 +50,7 @@ export const TemplatesView = () => {
 
         const newDoc = await addDoc(collection(db, "templates"), {
             title: newTemplateTitle,
+            userId: user.id,
             tasks: [],
             createdAt: new Date().toISOString()
         });

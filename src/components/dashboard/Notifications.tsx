@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+
 interface Notification {
   id: string;
   type: 'success' | 'error' | 'warning' | 'info';
@@ -20,6 +20,7 @@ interface Notification {
 const Notifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     // Load initial notifications
@@ -29,7 +30,7 @@ const Notifications = () => {
           id: '1',
           type: 'success',
           title: 'Client Activated',
-          message: 'John Doe completed onboarding successfully',
+          message: 'John Doe completed onboarding successfully and has been promoted to verified partner status in the US-EAST quadrant.',
           timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
           read: false,
         },
@@ -37,7 +38,7 @@ const Notifications = () => {
           id: '2',
           type: 'warning',
           title: 'High Drop-off Rate',
-          message: 'Step 3 has 68% failure rate',
+          message: 'Step 3 "Asset Integration" has a 68% failure rate over the last 24 mission hours. Action required.',
           timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
           read: false,
         },
@@ -45,7 +46,7 @@ const Notifications = () => {
           id: '3',
           type: 'info',
           title: 'New Feature Available',
-          message: 'Dashboard metrics now collapsible',
+          message: 'Dashboard metrics now support collapsible neural expansion for better data density management.',
           timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
           read: true,
         },
@@ -53,7 +54,7 @@ const Notifications = () => {
           id: '4',
           type: 'error',
           title: 'Email Delivery Failed',
-          message: 'Failed to send welcome email to client@example.com',
+          message: 'Failed to send welcome email relay to client@vortex.io. Terminal error code: 0x882.',
           timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
           read: true,
         },
@@ -105,7 +106,7 @@ const Notifications = () => {
         <Button variant="ghost" size="icon" className="h-6 w-6 text-white/20 hover:text-white relative">
           <Bell className="w-3.5 h-3.5" />
           {unreadCount > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs flex items-center justify-center rounded-full p-0">
+            <Badge className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs flex items-center justify-center rounded-full p-0 border-none shadow-glow">
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
           )}
@@ -114,58 +115,96 @@ const Notifications = () => {
 
       <DropdownMenuContent
         align="end"
-        className="w-80 bg-[#1a1b23] border-white/5 text-white"
+        className="w-80 bg-[#1a1b23] border-white/5 text-white p-0 overflow-hidden shadow-2xl"
       >
-        <div className="p-4 border-b border-white/5">
+        <div className="p-4 border-b border-white/[0.03] bg-white/[0.01]">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold">Notifications</h3>
+            <div>
+              <h3 className="text-xs font-black uppercase tracking-widest text-white/90">Signal Stream</h3>
+              <p className="text-[8px] font-bold text-white/20 uppercase tracking-tighter mt-0.5">Nexus Event Feed</p>
+            </div>
             {unreadCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={markAllAsRead}
-                className="text-xs text-white/60 hover:text-white h-auto p-0"
+                className="text-[9px] font-black uppercase tracking-widest text-accent hover:text-accent hover:bg-accent/5 h-6 px-2"
               >
-                Mark all read
+                Clear Stream
               </Button>
             )}
           </div>
         </div>
 
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-[450px] overflow-y-auto custom-scrollbar">
           {notifications.length === 0 ? (
-            <div className="p-8 text-center text-white/40">
-              <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No notifications yet</p>
+            <div className="p-10 text-center text-white/20">
+              <Bell className="w-10 h-10 mx-auto mb-3 opacity-20" />
+              <p className="text-[10px] font-black uppercase tracking-widest">No Active Signals</p>
             </div>
           ) : (
-            notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className={`p-4 border-b border-white/5 last:border-b-0 cursor-pointer hover:bg-white/5 ${!notification.read ? 'bg-white/5' : ''
-                  }`}
-                onClick={() => markAsRead(notification.id)}
-              >
-                <div className="flex gap-3 w-full">
-                  <div className="flex-shrink-0 mt-0.5">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm font-medium text-white">
-                        {notification.title}
-                      </p>
-                      <span className="text-xs text-white/40">
-                        {formatTime(notification.timestamp)}
-                      </span>
+            notifications.map((notification) => {
+              const isExpanded = expandedId === notification.id;
+              return (
+                <div
+                  key={notification.id}
+                  onClick={() => {
+                    markAsRead(notification.id);
+                    setExpandedId(isExpanded ? null : notification.id);
+                  }}
+                  className={`p-4 border-b border-white/[0.03] last:border-b-0 cursor-pointer transition-all relative group ${!notification.read ? 'bg-accent/[0.03]' : 'bg-transparent'
+                    } ${isExpanded ? 'bg-white/[0.02]' : ''}`}
+                >
+                  <div className="flex gap-3 w-full">
+                    <div className="flex-shrink-0 mt-0.5">
+                      {getNotificationIcon(notification.type)}
                     </div>
-                    <p className="text-xs text-white/60 truncate">
-                      {notification.message}
-                    </p>
+                    <div className="flex-1 min-w-0 pr-6">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className={`text-[11px] tracking-tight ${!notification.read ? 'font-black text-white' : 'font-bold text-white/40'}`}>
+                          {notification.title}
+                        </p>
+                        <span className="text-[8px] font-black uppercase tracking-tighter text-white/20 whitespace-nowrap ml-2">
+                          {formatTime(notification.timestamp)}
+                        </span>
+                      </div>
+                      <p className={`text-[11px] leading-relaxed transition-all ${!notification.read ? 'text-white/60' : 'text-white/20'} ${isExpanded ? '' : 'line-clamp-2'}`}>
+                        {notification.message}
+                      </p>
+                      {isExpanded && (
+                        <div className="mt-3 pt-3 border-t border-white/5 animate-in fade-in slide-in-from-top-1 duration-300">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-accent">Detailed Briefing</span>
+                            <span className="text-[9px] font-bold text-white/20 italic">Status: Relayed</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Interaction Overlay */}
+                  <div className="absolute right-2 top-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setNotifications(prev => prev.filter(n => n.id !== notification.id));
+                      }}
+                      className="h-7 w-7 rounded-lg hover:bg-red-500/20 hover:text-red-500 text-white/20"
+                      title="Dismiss Signal"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+
+                  {/* Unread Indicator */}
+                  {!notification.read && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-8 bg-accent shadow-glow rounded-r-full" />
+                  )}
                 </div>
-              </DropdownMenuItem>
-            ))
+              );
+            })
           )}
         </div>
       </DropdownMenuContent>

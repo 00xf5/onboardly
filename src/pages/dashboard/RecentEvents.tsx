@@ -2,15 +2,22 @@ import { useState, useEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { CheckCircle, XCircle, SkipForward } from 'lucide-react';
 
-const RecentEvents = () => {
+const RecentEvents = ({ user }: { user: any }) => {
   const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
+    if (!user?.id) return;
+
     const syncEvents = async () => {
-      const { collection, query, orderBy, limit, onSnapshot } = await import("firebase/firestore");
+      const { collection, query, where, orderBy, limit, onSnapshot } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
 
-      const q = query(collection(db, "events"), orderBy("timestamp", "desc"), limit(10));
+      const q = query(
+        collection(db, "events"),
+        where("userId", "==", user.id),
+        orderBy("timestamp", "desc"),
+        limit(10)
+      );
       const unsubscribe = onSnapshot(q, (snapshot) => {
         setEvents(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
       });

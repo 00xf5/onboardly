@@ -74,14 +74,25 @@ const Dashboard = () => {
 
   useEffect(() => {
     const storedUser = localStorage.getItem('onboardly_user');
-    if (storedUser) setUser(JSON.parse(storedUser));
+    let currentUser: any = null;
+    if (storedUser) {
+      currentUser = JSON.parse(storedUser);
+      setUser(currentUser);
+    }
 
     // Set up real-time listener for clients
     const syncClients = async () => {
-      const { collection, query, onSnapshot } = await import("firebase/firestore");
+      if (!currentUser?.id) {
+        setLoading(false);
+        return;
+      }
+
+      const { collection, query, where, onSnapshot } = await import("firebase/firestore");
       const { db } = await import("@/lib/firebase");
 
-      const q = query(collection(db, "clients"));
+      // Filter by userId
+      const q = query(collection(db, "clients"), where("userId", "==", currentUser.id));
+
       const unsubscribe = onSnapshot(q, (snapshot) => {
         const clientsData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         setClients(clientsData);
@@ -109,24 +120,44 @@ const Dashboard = () => {
   }, [location.pathname]);
 
   const handleAddClient = async () => {
-    if (!newClient.name || !newClient.email) {
+    if (!newClient.name || !newClient.email || !user?.id) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    const { collection, addDoc } = await import("firebase/firestore");
+    const { collection, addDoc, query, where, getDocs } = await import("firebase/firestore");
     const { db } = await import("@/lib/firebase");
 
     try {
+      // Find the template tasks if they exist
+      const templateQuery = query(
+        collection(db, "templates"),
+        where("userId", "==", user.id),
+        where("title", "==", newClient.template)
+      );
+      const templateSnap = await getDocs(templateQuery);
+      let initialTasks: any[] = [];
+
+      if (!templateSnap.empty) {
+        const templateData = templateSnap.docs[0].data();
+        initialTasks = (templateData.tasks || []).map((t: any) => ({
+          ...t,
+          completed: false,
+          id: t.id || Math.random().toString(36).substring(2, 9)
+        }));
+      }
+
       const clientObj = {
+        userId: user.id, // Tag with owner ID
         name: newClient.name,
         email: newClient.email,
         template: newClient.template,
-        tasks: [], // Would normally fetch from templates
+        tasks: initialTasks, // Blueprint Sync!
         progress: 0,
         status: "pending",
         createdAt: new Date().toISOString(),
         lastActivity: "Just now",
+        slug: `${newClient.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Math.random().toString(36).substring(2, 7)}`
       };
 
       await addDoc(collection(db, "clients"), clientObj);
@@ -134,7 +165,15 @@ const Dashboard = () => {
       setNewClient({ name: "", email: "", template: "Enterprise Nexus" });
       setIsNewClientDialogOpen(false);
       toast.success("Inbound Flow Initialized", {
-        description: `${clientObj.name} has been synchronized with ${clientObj.template}.`
+        description: `${clientObj.name} has been synchronized with ${clientObj.template}.`,
+        action: {
+          label: "Copy Link",
+          onClick: () => {
+            const url = `${window.location.origin}/onboard/${clientObj.slug}`;
+            navigator.clipboard.writeText(url);
+            toast.success("Link Copied!");
+          }
+        }
       });
     } catch (error: any) {
       console.error("Error adding client:", error);
@@ -206,7 +245,7 @@ const Dashboard = () => {
                 <div className="lg:col-span-2">
                   <LiveOnboardingFunnel funnel={analytics.funnel} />
                   <FailingSteps steps={failingSteps} />
-                  <RecentEvents />
+                  <RecentEvents user={user} />
                 </div>
                 <div>
                   <UserSegments />
@@ -229,23 +268,23 @@ const Dashboard = () => {
           }}
         />;
       case "Emails":
-        return <EmailsView />;
+        return <EmailsView user={user} />;
       case "Tasks":
         return <TasksView isAddDialogOpen={isNewTaskDialogOpen} setIsAddDialogOpen={setIsNewTaskDialogOpen} clients={clients} />;
       case "Templates":
-        return <TemplatesView />;
+        return <TemplatesView user={user} />;
       case "Flows":
-        return <FlowsView />;
+        return <FlowsView user={user} />;
       case "Settings":
         return <SettingsView />;
       case "Integration":
         return <IntegrationView />;
       case "Flow Templates":
-        return <FlowTemplatesView />;
+        return <FlowTemplatesView user={user} />;
       case "Visual Flow Editor":
-        return <VisualFlowEditorView />;
+        return <VisualFlowEditorView user={user} />;
       case "Insights":
-        return <InsightsView />;
+        return <InsightsView user={user} />;
       case "Webhooks":
         return <WebhooksView clients={clients} />;
       default:

@@ -21,7 +21,7 @@ const Pricing = () => {
     },
     {
       name: "Pro",
-      price: "$10",
+      price: "$99",
       period: "/month",
       description: "For growing businesses",
       features: [
@@ -38,7 +38,7 @@ const Pricing = () => {
     },
     {
       name: "Agency",
-      price: "$49",
+      price: "$199",
       period: "/month",
       description: "For teams & agencies",
       features: [
@@ -75,11 +75,10 @@ const Pricing = () => {
           {plans.map((plan, index) => (
             <div
               key={index}
-              className={`relative p-8 rounded-3xl border transition-all duration-300 ${
-                plan.popular
+              className={`relative p-8 rounded-3xl border transition-all duration-300 ${plan.popular
                   ? "bg-primary text-primary-foreground border-primary shadow-float scale-[1.02]"
                   : "bg-card border-border hover:border-accent/30 hover:shadow-soft"
-              }`}
+                }`}
             >
               {/* Popular Badge */}
               {plan.popular && (

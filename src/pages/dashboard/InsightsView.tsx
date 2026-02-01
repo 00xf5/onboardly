@@ -3,7 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { AlertTriangle, TrendingUp, Zap, Info } from 'lucide-react';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-const InsightsView = () => {
+const InsightsView = ({ user }: { user: any }) => {
   const activationTrend = [
     { date: 'Mon', rate: 45 },
     { date: 'Tue', rate: 52 },
