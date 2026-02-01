@@ -3,7 +3,6 @@ import { Mail, Send, Clock, Edit3, Trash2, Plus, ArrowUpRight, CheckCircle2, Ale
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { store } from "@/lib/store";
 import {
     Dialog,
     DialogContent,
@@ -14,39 +13,88 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
+import { PageLoader } from "@/components/Loader";
+
 export const EmailsView = React.memo(() => {
-    const [templates, setTemplates] = useState(() => store.getEmailTemplates());
-    const [transmissions, setTransmissions] = useState(() => store.getTransmissions());
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [transmissions, setTransmissions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const transmissionsHandler = () => setTransmissions(store.getTransmissions());
-        const templatesHandler = () => setTemplates(store.getEmailTemplates());
-        window.addEventListener('onboardly:transmissions:updated', transmissionsHandler as EventListener);
-        window.addEventListener('onboardly:email_templates:updated', templatesHandler as EventListener);
+        const syncTemplates = async () => {
+            const { collection, onSnapshot } = await import("firebase/firestore");
+            const { db } = await import("@/lib/firebase");
+            const unsubscribe = onSnapshot(collection(db, "email_templates"), (snapshot) => {
+                setTemplates(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+            });
+            return unsubscribe;
+        };
+
+        const syncTransmissions = async () => {
+            const { collection, query, orderBy, onSnapshot, limit } = await import("firebase/firestore");
+            const { db } = await import("@/lib/firebase");
+
+            const q = query(collection(db, "transmissions"), orderBy("sentAt", "desc"), limit(20));
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const logs = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // Simple formatting for the time
+                    const date = data.sentAt ? new Date(data.sentAt) : new Date();
+                    return {
+                        id: doc.id,
+                        client: data.client,
+                        template: data.template,
+                        status: data.status,
+                        time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                });
+                setTransmissions(logs);
+                setLoading(false);
+            }, (error) => {
+                console.error("Firestore listener error:", error);
+                setLoading(false);
+            });
+            return unsubscribe;
+        };
+
+        let unsubscribeTransmissions: any;
+        let unsubscribeTemplates: any;
+        syncTransmissions().then(unsub => unsubscribeTransmissions = unsub);
+        syncTemplates().then(unsub => unsubscribeTemplates = unsub);
+
         return () => {
-            window.removeEventListener('onboardly:transmissions:updated', transmissionsHandler as EventListener);
-            window.removeEventListener('onboardly:email_templates:updated', templatesHandler as EventListener);
+            if (unsubscribeTransmissions) unsubscribeTransmissions();
+            if (unsubscribeTemplates) unsubscribeTemplates();
         };
     }, []);
+
+    if (loading) return <PageLoader />;
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [newTemplate, setNewTemplate] = useState({ name: "", subject: "" });
 
-    const handleCreateTemplate = () => {
+    const handleCreateTemplate = async () => {
         if (!newTemplate.name) return;
-        store.addEmailTemplate({
+        const { collection, addDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+
+        await addDoc(collection(db, "email_templates"), {
             ...newTemplate,
             trigger: "Manual",
             openRate: "0%",
-            status: "draft"
+            status: "draft",
+            createdAt: new Date().toISOString()
         });
+
         setIsAddDialogOpen(false);
         setNewTemplate({ name: "", subject: "" });
         toast.success("Relay Synced");
     };
 
-    const handleDeleteTemplate = (id: number | string) => {
-        store.deleteEmailTemplate(id);
+    const handleDeleteTemplate = async (id: string) => {
+        const { doc, deleteDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        await deleteDoc(doc(db, "email_templates", id));
         toast.success("Relay Deleted");
     };
 
@@ -128,7 +176,7 @@ export const EmailsView = React.memo(() => {
                             {transmissions.map((log) => (
                                 <div key={log.id} className="relative pl-4 border-l border-white/5">
                                     <div className={`absolute left-[-2px] top-0.5 w-[3px] h-[3px] rounded-full ${log.status === 'opened' ? 'bg-success shadow-[0_0_8px_#4ade80]' :
-                                            log.status === 'bounced' ? 'bg-red-500 shadow-[0_0_8px_#f87171]' : 'bg-blue-400 shadow-[0_0_8px_#60a5fa]'
+                                        log.status === 'bounced' ? 'bg-red-500 shadow-[0_0_8px_#f87171]' : 'bg-blue-400 shadow-[0_0_8px_#60a5fa]'
                                         }`} />
                                     <div className="flex items-center justify-between">
                                         <p className="text-[10px] font-bold text-white leading-none">{log.client}</p>

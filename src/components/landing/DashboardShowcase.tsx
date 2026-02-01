@@ -6,7 +6,7 @@ const DashboardShowcase = () => {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-8 text-center">
             One screen. One truth.
           </h2>
-          
+
           <div className="relative max-w-5xl mx-auto">
             <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
               {/* Browser Header */}
@@ -20,35 +20,35 @@ const DashboardShowcase = () => {
                   <div className="w-full h-6 bg-muted rounded" />
                 </div>
               </div>
-              
+
               {/* Dashboard Screenshot */}
               <div className="relative">
-                <img 
-                  src="/api/placeholder/1200/800" 
+                <img
+                  src="/onboardly_dashboard_preview_1769901228764.png"
                   alt="Onboardly Dashboard"
                   className="w-full h-auto"
                 />
-                
+
                 {/* Callouts */}
                 <div className="absolute top-20 left-8 bg-accent text-white px-3 py-1 rounded text-sm font-medium">
                   Activation rate
                 </div>
-                
+
                 <div className="absolute top-40 right-8 bg-accent text-white px-3 py-1 rounded text-sm font-medium">
                   Funnel drop-off
                 </div>
-                
+
                 <div className="absolute bottom-32 left-12 bg-accent text-white px-3 py-1 rounded text-sm font-medium">
                   Failing steps
                 </div>
-                
+
                 <div className="absolute bottom-20 right-12 bg-accent text-white px-3 py-1 rounded text-sm font-medium">
                   Live events feed
                 </div>
               </div>
             </div>
           </div>
-          
+
           <p className="text-center text-muted-foreground mt-12 text-lg">
             Yeah… I'd check this every morning.
           </p>

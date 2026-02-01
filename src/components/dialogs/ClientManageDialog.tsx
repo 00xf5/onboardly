@@ -19,8 +19,19 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { store } from "@/lib/store";
-import { Client, UserSegment } from "@/lib/store";
+// Local types to replace store imports
+type UserSegment = "new_user" | "returning_inactive" | "power_user" | "churn_risk";
+interface Client {
+  id: string | number;
+  name: string;
+  email: string;
+  company?: string;
+  template?: string;
+  status: string;
+  progress: number;
+  tasks?: any[];
+  segment?: UserSegment;
+}
 
 interface ClientManageDialogProps {
   open: boolean;
@@ -33,13 +44,14 @@ const ClientManageDialog: React.FC<ClientManageDialogProps> = ({
   onOpenChange,
   client
 }) => {
+  const [templates, setTemplates] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     company: "",
     template: "",
     status: "pending" as string,
-    segment: "new_user" as UserSegment,
+    segment: "new_user" as any,
   });
 
   useEffect(() => {
@@ -50,44 +62,56 @@ const ClientManageDialog: React.FC<ClientManageDialogProps> = ({
         company: client.company || "",
         template: client.template || "",
         status: client.status || "pending",
-        segment: client.segment || "new_user",
+        segment: (client as any).segment || "new_user",
       });
     }
+
+    const fetchTemplates = async () => {
+      const { collection, getDocs } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      const snap = await getDocs(collection(db, "templates"));
+      setTemplates(snap.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+    };
+    fetchTemplates();
   }, [client]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!client || !formData.name || !formData.email) {
       toast.error("Name and email are required");
       return;
     }
 
     try {
-      const updatedClient: Client = {
-        ...client,
+      const { doc, updateDoc } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+
+      const clientRef = doc(db, "clients", String(client.id));
+      await updateDoc(clientRef, {
         name: formData.name,
         email: formData.email,
         company: formData.company,
         template: formData.template,
         status: formData.status,
         segment: formData.segment,
-      };
+        lastActivity: "Profile updated"
+      });
 
-      store.updateClient(updatedClient);
       toast.success("Client updated successfully");
       onOpenChange(false);
     } catch (error) {
+      console.error("Update error:", error);
       toast.error("Failed to update client");
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!client) return;
-    
+
     if (confirm(`Are you sure you want to delete ${client.name}?`)) {
       try {
-        const clients = store.getClients().filter(c => c.id !== client.id);
-        store.saveClients(clients);
-        window.dispatchEvent(new CustomEvent('onboardly:clients:updated'));
+        const { doc, deleteDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        await deleteDoc(doc(db, "clients", String(client.id)));
         toast.success("Client deleted successfully");
         onOpenChange(false);
       } catch (error) {
@@ -157,7 +181,7 @@ const ClientManageDialog: React.FC<ClientManageDialogProps> = ({
                   <SelectValue placeholder="Select template" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1a1b23] border-white/5">
-                  {store.getTemplates().map((template) => (
+                  {templates.map((template) => (
                     <SelectItem key={template.id} value={template.title} className="text-xs">
                       {template.title}
                     </SelectItem>

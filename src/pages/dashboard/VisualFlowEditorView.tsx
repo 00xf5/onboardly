@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { store, Flow, Step } from '@/lib/store';
+import React, { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Edit, ArrowUp, ArrowDown } from 'lucide-react';
@@ -8,28 +7,43 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
+import { PageLoader } from '@/components/Loader';
+
 const VisualFlowEditorView = () => {
-  const [flows, setFlows] = useState<Flow[]>([]);
-  const [selectedFlow, setSelectedFlow] = useState<Flow | null>(null);
+  const [flows, setFlows] = useState<any[]>([]);
+  const [selectedFlow, setSelectedFlow] = useState<any | null>(null);
   const [isStepDialogOpen, setIsStepDialogOpen] = useState(false);
-  const [editingStep, setEditingStep] = useState<Step | null>(null);
+  const [editingStep, setEditingStep] = useState<any | null>(null);
   const [stepName, setStepName] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const handler = () => {
-        const allFlows = store.getFlows('default-proj');
-        setFlows(allFlows);
-        if (selectedFlow) {
-            setSelectedFlow(allFlows.find(f => f.id === selectedFlow.id) || null);
-        } else if (allFlows.length > 0) {
-            setSelectedFlow(allFlows[0]);
-        }
-    };
-    handler(); // Initial load
+    const syncFlows = async () => {
+      const { collection, onSnapshot } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      const unsubscribe = onSnapshot(collection(db, "flows"), (snapshot) => {
+        const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        setFlows(list);
 
-    window.addEventListener('onboardly:flows:updated', handler as EventListener);
-    return () => window.removeEventListener('onboardly:flows:updated', handler as EventListener);
+        if (selectedFlow) {
+          const updated = list.find(f => f.id === selectedFlow.id);
+          if (updated) setSelectedFlow(updated);
+        } else if (list.length > 0 && !selectedFlow) {
+          setSelectedFlow(list[0]);
+        }
+        setLoading(false);
+      }, (error) => {
+        console.error("Firestore listener error:", error);
+        setLoading(false);
+      });
+      return unsubscribe;
+    };
+    let unsubscribe: any;
+    syncFlows().then(unsub => unsubscribe = unsub);
+    return () => unsubscribe && unsubscribe();
   }, [selectedFlow?.id]);
+
+  if (loading) return <PageLoader />;
 
   const handleSelectFlow = (flowId: string) => {
     const flow = flows.find(f => f.id === flowId);
@@ -42,46 +56,64 @@ const VisualFlowEditorView = () => {
     setIsStepDialogOpen(true);
   };
 
-  const openEditStepDialog = (step: Step) => {
+  const openEditStepDialog = (step: any) => {
     setEditingStep(step);
     setStepName(step.name);
     setIsStepDialogOpen(true);
   };
 
-  const handleSaveStep = () => {
+  const handleSaveStep = async () => {
     if (!selectedFlow) return;
+    const { doc, updateDoc } = await import("firebase/firestore");
+    const { db } = await import("@/lib/firebase");
 
+    let updatedSteps = [...(selectedFlow.steps || [])];
     if (editingStep) {
-      // Update existing step
-      const updatedStep = { ...editingStep, name: stepName };
-      store.updateStepInFlow(selectedFlow.id, updatedStep);
+      updatedSteps = updatedSteps.map(s => s.id === editingStep.id ? { ...s, name: stepName } : s);
       toast.success('Step updated');
     } else {
-      // Add new step
-      const newStep: Omit<Step, 'id'> = {
+      updatedSteps.push({
+        id: `step-${Date.now()}`,
         name: stepName,
         type: 'checklist-item',
         content: '',
         enabled: true,
-      };
-      store.addStepToFlow(selectedFlow.id, newStep);
+      });
       toast.success('Step added');
     }
+
+    await updateDoc(doc(db, "flows", selectedFlow.id), { steps: updatedSteps });
     setIsStepDialogOpen(false);
   };
 
-  const handleDeleteStep = (stepId: string) => {
+  const handleDeleteStep = async (stepId: string) => {
     if (!selectedFlow) return;
-    store.deleteStepFromFlow(selectedFlow.id, stepId);
-    const updatedFlow = store.getFlows('default-proj').find(f => f.id === selectedFlow.id);
-    setSelectedFlow(updatedFlow || null);
+    const { doc, updateDoc } = await import("firebase/firestore");
+    const { db } = await import("@/lib/firebase");
+
+    const updatedSteps = (selectedFlow.steps || []).filter((s: any) => s.id !== stepId);
+    await updateDoc(doc(db, "flows", selectedFlow.id), { steps: updatedSteps });
     toast.success('Step deleted');
   };
 
-  const handleMoveStep = (stepId: string, direction: 'up' | 'down') => {
+  const handleMoveStep = async (stepId: string, direction: 'up' | 'down') => {
     if (!selectedFlow) return;
-    const updatedFlow = store.moveStepInFlow(selectedFlow.id, stepId, direction);
-    setSelectedFlow({ ...updatedFlow }); // Force re-render
+    const { doc, updateDoc } = await import("firebase/firestore");
+    const { db } = await import("@/lib/firebase");
+
+    const steps = [...(selectedFlow.steps || [])];
+    const index = steps.findIndex(s => s.id === stepId);
+    if (index === -1) return;
+
+    if (direction === 'up' && index > 0) {
+      [steps[index], steps[index - 1]] = [steps[index - 1], steps[index]];
+    } else if (direction === 'down' && index < steps.length - 1) {
+      [steps[index], steps[index + 1]] = [steps[index + 1], steps[index]];
+    } else {
+      return;
+    }
+
+    await updateDoc(doc(db, "flows", selectedFlow.id), { steps });
     toast.success(`Step moved ${direction}`);
   };
 
@@ -110,7 +142,7 @@ const VisualFlowEditorView = () => {
               <Button variant="ghost" size="sm" onClick={openAddStepDialog} disabled={!selectedFlow}><Plus className="w-4 h-4 mr-2" /> Add Step</Button>
             </div>
             <div className="space-y-2">
-              {selectedFlow?.steps.map(step => (
+              {(selectedFlow?.steps || []).map(step => (
                 <div key={step.id} className="bg-white/10 p-3 rounded-lg flex justify-between items-center">
                   <p className="text-sm">{step.name}</p>
                   <div className="flex items-center space-x-1">

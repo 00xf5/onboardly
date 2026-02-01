@@ -17,25 +17,34 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
+    const { signInWithEmailAndPassword } = await import("firebase/auth");
+    const { doc, getDoc } = await import("firebase/firestore");
+    const { auth, db } = await import("@/lib/firebase");
+
     try {
-      const response = await fetch('/api/auth-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      
-      const data = await response.json();
-      
-      if (data.ok) {
-        // Store user in localStorage for session
-        localStorage.setItem('onboardly_user', JSON.stringify(data.user));
-        navigate("/dashboard");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Get user profile from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+
+      if (userDoc.exists()) {
+        localStorage.setItem('onboardly_user', JSON.stringify({ ...userDoc.data(), id: userDoc.id }));
       } else {
-        toast.error(data.error || 'Login failed');
+        // Fallback if doc doesn't exist for some reason
+        localStorage.setItem('onboardly_user', JSON.stringify({
+          id: user.uid,
+          email: user.email,
+          name: user.displayName || 'User',
+          plan: 'free'
+        }));
       }
-    } catch (error) {
-      toast.error('Network error. Please try again.');
+
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast.error(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -67,18 +76,8 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Demo Credentials Notice */}
-          <div className="mb-6 p-4 bg-accent/10 border border-accent/20 rounded-lg">
-            <p className="text-sm text-accent-foreground mb-2">
-              <strong>Demo Credentials:</strong>
-            </p>
-            <p className="text-xs text-accent-foreground font-mono">
-              Email: demo@onboardly.app<br />
-              Password: demo123
-            </p>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-6">
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -103,22 +102,15 @@ const Login = () => {
                       toast.error('Please enter your email first');
                       return;
                     }
-                    
+
                     try {
-                      const response = await fetch('/api/auth-forgot-password', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email })
-                      });
-                      
-                      const data = await response.json();
-                      if (data.ok) {
-                        toast.success(data.message);
-                      } else {
-                        toast.error(data.error || 'Failed to send reset email');
-                      }
-                    } catch (error) {
-                      toast.error('Network error. Please try again.');
+                      const { sendPasswordResetEmail } = await import("firebase/auth");
+                      const { auth } = await import("@/lib/firebase");
+                      await sendPasswordResetEmail(auth, email);
+                      toast.success('If an account exists, a reset link will be sent');
+                    } catch (error: any) {
+                      console.error("Reset error:", error);
+                      toast.error('Failed to send reset email');
                     }
                   }}
                 >

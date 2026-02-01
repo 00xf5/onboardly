@@ -1,11 +1,24 @@
-import { store } from '@/lib/store';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import React from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { AlertTriangle, TrendingUp, Zap, Info } from 'lucide-react';
 import { Tooltip as UiTooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const InsightsView = () => {
-  const activationTrend = store.getActivationRateTrend('default-proj');
-  const recommendations = store.getRecommendations('default-proj');
+  const activationTrend = [
+    { date: 'Mon', rate: 45 },
+    { date: 'Tue', rate: 52 },
+    { date: 'Wed', rate: 48 },
+    { date: 'Thu', rate: 61 },
+    { date: 'Fri', rate: 55 },
+    { date: 'Sat', rate: 67 },
+    { date: 'Sun', rate: 72 },
+  ];
+
+  const recommendations = [
+    { impact: 'high', title: 'Automate Doc Verification', description: 'Clients are spending 45% of their time in the "Legal" stage. Automating PDF parsing could reduce activation time by 2 days.', impactType: 'high' } as any,
+    { impact: 'medium', title: 'Increase Engagement on Step 2', description: 'Step 2 has a 25% drop-off. Consider adding a video guide to explain the technical setup.', impactType: 'medium' },
+    { impact: 'low', title: 'Optimize Email Timing', description: 'Emails sent at 10 AM local time have a 15% higher open rate.', impactType: 'low' }
+  ];
 
   const getImpactIcon = (impact: 'high' | 'medium' | 'low') => {
     switch (impact) {
@@ -25,8 +38,8 @@ const InsightsView = () => {
               <AreaChart data={activationTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FF6B4A" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#FF6B4A" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#FF6B4A" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#FF6B4A" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />

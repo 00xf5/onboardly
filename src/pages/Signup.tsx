@@ -27,26 +27,33 @@ const Signup = () => {
     e.preventDefault();
     if (!agreed) return;
     setIsLoading(true);
-    
+
+    const { createUserWithEmailAndPassword, updateProfile } = await import("firebase/auth");
+    const { doc, setDoc } = await import("firebase/firestore");
+    const { auth, db } = await import("@/lib/firebase");
+
     try {
-      const response = await fetch('/api/auth-signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
-      });
-      
-      const data = await response.json();
-      
-      if (data.ok) {
-        // Store user in localStorage for session
-        localStorage.setItem('onboardly_user', JSON.stringify(data.user));
-        toast.success('Account created successfully!');
-        navigate("/dashboard");
-      } else {
-        toast.error(data.error || 'Signup failed');
-      }
-    } catch (error) {
-      toast.error('Network error. Please try again.');
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await updateProfile(user, { displayName: name });
+
+      // Create user document in Firestore
+      const userDoc = {
+        id: user.uid,
+        name,
+        email,
+        plan: 'free',
+        createdAt: new Date().toISOString()
+      };
+      await setDoc(doc(db, "users", user.uid), userDoc);
+
+      localStorage.setItem('onboardly_user', JSON.stringify(userDoc));
+      toast.success('Account created successfully!');
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      toast.error(error.message || 'Signup failed');
     } finally {
       setIsLoading(false);
     }
@@ -103,17 +110,8 @@ const Signup = () => {
             </p>
           </div>
 
-          {/* Demo Credentials Notice */}
-          <div className="mb-6 p-4 bg-accent/10 border border-accent/20 rounded-lg">
-            <p className="text-sm text-accent-foreground mb-2">
-              <strong>Quick Start:</strong>
-            </p>
-            <p className="text-xs text-accent-foreground font-mono">
-              Use demo@onboardly.app / demo123 for instant access
-            </p>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-6">
+
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input

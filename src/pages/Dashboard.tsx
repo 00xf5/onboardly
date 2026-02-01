@@ -3,25 +3,15 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Plus,
-  FileText,
-  CheckSquare,
-  Mail,
-  ChevronLeft,
-  ChevronRight,
-  Sparkles,
   Menu,
   PanelLeft,
-  PanelLeftClose,
-  LayoutGrid,
-  Users,
   Search,
-  Bell,
   LogOut,
   Clock,
   CheckCircle2,
   AlertCircle,
-  LayoutDashboard,
-  Settings as SettingsIcon
+  ChevronLeft,
+  PanelLeftClose
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -43,8 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { navItems, initialClients } from "./dashboard/constants";
-import { store } from "@/lib/store";
+import { navItems } from "./dashboard/constants";
 import LiveOnboardingFunnel from './dashboard/LiveOnboardingFunnel';
 import FailingSteps from './dashboard/FailingSteps';
 import RecentEvents from './dashboard/RecentEvents';
@@ -59,11 +48,14 @@ import FlowTemplatesView from './dashboard/FlowTemplatesView';
 import VisualFlowEditorView from './dashboard/VisualFlowEditorView';
 import InsightsView from './dashboard/InsightsView';
 import WebhooksView from './dashboard/WebhooksView';
-import FlowsView from './dashboard/FlowsView';
-import ClientManageDialog from '@/components/dialogs/ClientManageDialog';
 import DashboardMetrics from '@/components/dashboard/DashboardMetrics';
 import Notifications from '@/components/dashboard/Notifications';
+import ActivationPulse from './dashboard/ActivationPulse';
 import UserSegments from './dashboard/UserSegments';
+import FlowsView from './dashboard/FlowsView';
+import ClientManageDialog from '@/components/dialogs/ClientManageDialog';
+
+import { PageLoader } from "@/components/Loader";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -74,17 +66,40 @@ const Dashboard = () => {
   const [isManageClientDialogOpen, setIsManageClientDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [clients, setClients] = useState(() => {
-    const fromStore = store.getClients();
-    return fromStore.length ? fromStore : initialClients;
-  });
+  const [user, setUser] = useState<any>(null);
+  const [clients, setClients] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newClient, setNewClient] = useState({ name: "", email: "", template: "Enterprise Nexus" });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handler = () => setClients(store.getClients());
-    window.addEventListener('onboardly:clients:updated', handler as EventListener);
-    return () => window.removeEventListener('onboardly:clients:updated', handler as EventListener);
+    const storedUser = localStorage.getItem('onboardly_user');
+    if (storedUser) setUser(JSON.parse(storedUser));
+
+    // Set up real-time listener for clients
+    const syncClients = async () => {
+      const { collection, query, onSnapshot } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+
+      const q = query(collection(db, "clients"));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const clientsData = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        setClients(clientsData);
+        setLoading(false);
+      }, (error) => {
+        console.error("Firestore listener error:", error);
+        setLoading(false);
+      });
+
+      return unsubscribe;
+    };
+
+    let unsubscribe: any;
+    syncClients().then(unsub => unsubscribe = unsub);
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const activeTab = useMemo(() => {
@@ -93,40 +108,41 @@ const Dashboard = () => {
     return item ? item.label : "Dashboard";
   }, [location.pathname]);
 
-  const handleAddClient = () => {
+  const handleAddClient = async () => {
     if (!newClient.name || !newClient.email) {
       toast.error("Please fill in all fields");
       return;
     }
 
-    const template = store.getTemplates().find(t => t.title === newClient.template);
-    const plan = store.getPlan();
-    const existingClients = store.getClients();
-    if (plan === 'free' && existingClients.length >= 1) {
-      toast.error('Upgrade to Pro to add more partners');
-      return;
+    const { collection, addDoc } = await import("firebase/firestore");
+    const { db } = await import("@/lib/firebase");
+
+    try {
+      const clientObj = {
+        name: newClient.name,
+        email: newClient.email,
+        template: newClient.template,
+        tasks: [], // Would normally fetch from templates
+        progress: 0,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        lastActivity: "Just now",
+      };
+
+      await addDoc(collection(db, "clients"), clientObj);
+
+      setNewClient({ name: "", email: "", template: "Enterprise Nexus" });
+      setIsNewClientDialogOpen(false);
+      toast.success("Inbound Flow Initialized", {
+        description: `${clientObj.name} has been synchronized with ${clientObj.template}.`
+      });
+    } catch (error: any) {
+      console.error("Error adding client:", error);
+      toast.error("Failed to add client");
     }
-
-    const clientObj = store.addClient({
-      name: newClient.name,
-      email: newClient.email,
-      template: newClient.template,
-      tasks: template?.tasks ? template.tasks.map(tsk => ({ ...tsk, completed: false })) : [],
-      progress: 0,
-      status: "pending",
-      lastActivity: "Just now",
-    }, 'default-proj');
-
-    setClients(store.getClients());
-    setNewClient({ name: "", email: "", template: "Enterprise Nexus" });
-    setIsNewClientDialogOpen(false);
-    toast.success("Inbound Flow Initialized", {
-      description: `${clientObj.name} has been synchronized with ${clientObj.template}.`
-    });
   };
 
   const resetClientForm = () => {
-    setClients(store.getClients());
     setNewClient({ name: "", email: "", template: "Enterprise Nexus" });
     setIsNewClientDialogOpen(false);
   };
@@ -137,8 +153,27 @@ const Dashboard = () => {
     toast.success('Logged out successfully');
   };
 
-  const analytics = store.getAnalytics('default-proj');
-  const failingSteps = store.getFailingSteps('default-proj');
+  const analytics = useMemo(() => {
+    const total = clients.length;
+    const activated = clients.filter((c: any) => c.progress === 100 || c.isActivated).length;
+    const activationRate = total > 0 ? Math.round((activated / total) * 100) : 0;
+
+    // Simple funnel mock based on real counts
+    return {
+      funnel: [
+        { name: 'Signup', count: 100, dropOff: 0, avgTime: '1m' },
+        { name: 'Step 1', count: 85, dropOff: 15, avgTime: '2m' },
+        { name: 'Step 2', count: 60, dropOff: 25, avgTime: '3m' },
+        { name: 'Activated', count: activationRate, dropOff: 100 - activationRate, avgTime: 'N/A' }
+      ]
+    };
+  }, [clients]);
+
+  const failingSteps = useMemo(() => {
+    // Extract failing steps from actual client tasks if possible, 
+    // or return empty for now since we are stripping mock data
+    return [];
+  }, [clients]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -165,7 +200,8 @@ const Dashboard = () => {
         return (
           <>
             <div className="space-y-6">
-              <DashboardMetrics analytics={analytics} failingSteps={failingSteps} />
+              <DashboardMetrics analytics={analytics} failingSteps={failingSteps} clients={clients} />
+              <ActivationPulse analytics={analytics} clients={clients} />
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
                   <LiveOnboardingFunnel funnel={analytics.funnel} />
@@ -180,12 +216,12 @@ const Dashboard = () => {
           </>
         );
       case "Clients":
-        return <ClientsView 
-          clients={clients} 
-          searchQuery={searchQuery} 
-          setSearchQuery={setSearchQuery} 
-          setIsNewClientDialogOpen={setIsNewClientDialogOpen} 
-          getStatusIcon={getStatusIcon} 
+        return <ClientsView
+          clients={clients}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          setIsNewClientDialogOpen={setIsNewClientDialogOpen}
+          getStatusIcon={getStatusIcon}
           getStatusLabel={getStatusLabel}
           onManageClient={(client) => {
             setSelectedClient(client);
@@ -195,7 +231,7 @@ const Dashboard = () => {
       case "Emails":
         return <EmailsView />;
       case "Tasks":
-        return <TasksView isAddDialogOpen={isNewTaskDialogOpen} setIsAddDialogOpen={setIsNewTaskDialogOpen} />;
+        return <TasksView isAddDialogOpen={isNewTaskDialogOpen} setIsAddDialogOpen={setIsNewTaskDialogOpen} clients={clients} />;
       case "Templates":
         return <TemplatesView />;
       case "Flows":
@@ -211,7 +247,7 @@ const Dashboard = () => {
       case "Insights":
         return <InsightsView />;
       case "Webhooks":
-        return <WebhooksView />;
+        return <WebhooksView clients={clients} />;
       default:
         return <PlaceholderView title={activeTab} onReset={() => navigate("/dashboard")} />;
     }
@@ -221,7 +257,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-[#0b0c10] flex overflow-hidden relative selection:bg-accent/30 leading-tight">
       {/* Mobile Menu Overlay */}
       {mobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
@@ -249,8 +285,8 @@ const Dashboard = () => {
                 <PanelLeftClose className="w-3.5 h-3.5" />
               </button>
             )}
-            <button 
-              onClick={() => setMobileMenuOpen(false)} 
+            <button
+              onClick={() => setMobileMenuOpen(false)}
               className="md:hidden text-white/20 hover:text-white transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -260,8 +296,8 @@ const Dashboard = () => {
 
         {!sidebarOpen && (
           <div className="flex justify-center py-2">
-            <button 
-              onClick={() => setSidebarOpen(true)} 
+            <button
+              onClick={() => setSidebarOpen(true)}
               className="hidden md:flex w-7 h-7 items-center justify-center rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white transition-all"
             >
               <PanelLeft className="w-3.5 h-3.5" />
@@ -290,12 +326,14 @@ const Dashboard = () => {
         <div className="p-3 border-t border-white/5">
           <div className={`p-1.5 rounded-xl bg-white/[0.02] flex items-center gap-2 ${!sidebarOpen && 'justify-center'}`}>
             <Avatar className="w-6 h-6 rounded-lg ring-1 ring-white/10">
-              <AvatarFallback className="bg-accent/10 text-accent font-bold text-[9px]">JD</AvatarFallback>
+              <AvatarFallback className="bg-accent/10 text-accent font-bold text-[9px]">
+                {user?.name?.[0] || 'U'}
+              </AvatarFallback>
             </Avatar>
             {sidebarOpen && (
               <div className="min-w-0">
-                <p className="text-[10px] font-bold text-white truncate">Jane Doe</p>
-                <p className="text-[8px] text-accent/40 font-black uppercase tracking-tighter leading-none">Pro</p>
+                <p className="text-[10px] font-bold text-white truncate">{user?.name || 'User'}</p>
+                <p className="text-[8px] text-accent/40 font-black uppercase tracking-tighter leading-none">{user?.plan || 'Free'}</p>
               </div>
             )}
           </div>
@@ -360,7 +398,7 @@ const Dashboard = () => {
 
           <div className="flex-1 overflow-y-auto p-4 md:p-5 custom-scrollbar">
             <div className="max-w-6xl mx-auto">
-              {renderContent()}
+              {loading ? <PageLoader /> : renderContent()}
             </div>
           </div>
         </div>

@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
-import { store } from "@/lib/store";
 import OptimizedImage from "@/components/OptimizedImage";
 
 const PublicOnboarding = () => {
@@ -34,46 +33,76 @@ const PublicOnboarding = () => {
 
     useEffect(() => {
         if (!id) return;
-        const found = store.getClients().find(c => c.slug === id);
-        if (found) {
-            setFormData({ name: found.name, company: found.company || "", email: found.email });
-            setTasks(found.tasks && found.tasks.length ? found.tasks : tasks);
-            setStep(2);
-        }
+
+        const fetchClient = async () => {
+            const { collection, query, where, getDocs } = await import("firebase/firestore");
+            const { db } = await import("@/lib/firebase");
+            const q = query(collection(db, "clients"), where("slug", "==", id));
+            const snap = await getDocs(q);
+
+            if (!snap.empty) {
+                const found = { ...(snap.docs[0].data() as any), id: snap.docs[0].id };
+                setFormData({ name: found.name, company: found.company || "", email: found.email });
+                setTasks(found.tasks && found.tasks.length ? found.tasks : tasks);
+                setStep(2);
+            }
+        };
+
+        fetchClient();
     }, [id]);
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.name) return;
-        toast.promise(new Promise(resolve => setTimeout(resolve, 1000)), {
+
+        const { collection, addDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+
+        toast.promise((async () => {
+            const clientObj = {
+                name: formData.name,
+                email: formData.email,
+                company: formData.company,
+                slug: formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+                tasks,
+                progress: (tasks.filter(t => t.completed).length / tasks.length) * 100,
+                status: "in_progress",
+                createdAt: new Date().toISOString(),
+                lastActivity: "Just now",
+            };
+
+            await addDoc(collection(db, "clients"), clientObj);
+
+            // Trigger local step change
+            setStep(2);
+            return 'Integration Established';
+        })(), {
             loading: 'Initializing Nexus...',
-            success: () => {
-                // Persist client locally and add a welcome transmission
-                const clientObj = store.addClient({
-                    name: formData.name,
-                    email: formData.email,
-                    company: formData.company,
-                    tasks,
-                    progress: (tasks.filter(t => t.completed).length / tasks.length) * 100,
-                    status: "in_progress",
-                    lastActivity: "Just now",
-                });
-
-                store.addTransmission({
-                    client: clientObj.name,
-                    template: "Welcome",
-                    status: "sent"
-                } as any);
-
-                setStep(2);
-                return 'Integration Established';
-            },
+            success: (msg) => msg,
             error: 'Link error',
         });
     };
 
-    const toggleTask = (id: number) => {
-        setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    const toggleTask = async (taskId: number) => {
+        const newTasks = tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t);
+        setTasks(newTasks);
+
+        // If we have an id (slug), update in firestore too
+        if (id) {
+            const { collection, query, where, getDocs, updateDoc, doc } = await import("firebase/firestore");
+            const { db } = await import("@/lib/firebase");
+            const q = query(collection(db, "clients"), where("slug", "==", id));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+                const clientDoc = snap.docs[0];
+                const progress = (newTasks.filter(t => t.completed).length / newTasks.length) * 100;
+                await updateDoc(doc(db, "clients", clientDoc.id), {
+                    tasks: newTasks,
+                    progress,
+                    lastActivity: "Updated task"
+                });
+            }
+        }
     };
 
     return (

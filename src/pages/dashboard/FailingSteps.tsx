@@ -1,4 +1,7 @@
-import { FailingStep } from '@/lib/store';
+export interface FailingStep {
+  name: string;
+  failRate: number;
+}
 
 const FailingSteps = ({ steps }: { steps: FailingStep[] }) => {
   const failingSteps = steps;

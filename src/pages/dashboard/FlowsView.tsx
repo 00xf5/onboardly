@@ -1,18 +1,35 @@
 import { useState, useEffect } from 'react';
-import { store, Flow } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
+import { PageLoader } from '@/components/Loader';
 
 const FlowsView = () => {
-  const [flows, setFlows] = useState<Flow[]>([]);
+  const [flows, setFlows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setFlows(store.getFlows('default-proj'));
-    const handler = () => setFlows(store.getFlows('default-proj'));
-    window.addEventListener('onboardly:flows:updated', handler as EventListener);
-    return () => window.removeEventListener('onboardly:flows:updated', handler as EventListener);
+    const syncFlows = async () => {
+      const { collection, query, onSnapshot } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+
+      const q = query(collection(db, "flows"));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setFlows(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+        setLoading(false);
+      }, (error) => {
+        console.error("Firestore listener error:", error);
+        setLoading(false);
+      });
+      return unsubscribe;
+    };
+
+    let unsubscribe: any;
+    syncFlows().then(unsub => unsubscribe = unsub);
+    return () => unsubscribe && unsubscribe();
   }, []);
+
+  if (loading) return <PageLoader />;
 
   return (
     <div className="bg-white/5 p-6 rounded-lg">

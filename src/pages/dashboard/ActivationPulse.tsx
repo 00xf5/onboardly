@@ -1,19 +1,18 @@
+import React from 'react';
 import { ArrowUp, ArrowDown } from 'lucide-react';
-import { store } from '@/lib/store';
 
-const ActivationPulse = ({ analytics }: { analytics: any }) => {
-  const activationRate = analytics.funnel.find(step => step.name === 'Activated')?.count || 0;
-  
-  // Get real client data
-  const clients = store.getClientsByProject('default-proj');
+const ActivationPulse = ({ analytics, clients = [] }: { analytics: any, clients?: any[] }) => {
+  const activationRate = analytics.funnel.find((step: any) => step.name === 'Activated')?.count || 0;
+
+  // Calculate from passed client data
   const totalClients = clients.length;
-  const activatedClients = clients.filter(c => c.isActivated).length;
-  const inProgressClients = clients.filter(c => c.status === 'in_progress').length;
-  
-  // Calculate real average time to activate (simplified)
+  const activatedClients = clients.filter((c: any) => c.progress === 100 || c.isActivated).length;
+  const inProgressClients = clients.filter((c: any) => c.status === 'in_progress').length;
+
+  // Calculate average time to activate (simplified)
   const avgTimeToActivate = activatedClients > 0 ? '1d 4h' : 'N/A';
-  
-  // Calculate drop-off risk from real data
+
+  // Calculate drop-off risk
   const dropOffRate = totalClients > 0 ? Math.round(((totalClients - activatedClients) / totalClients) * 100) : 0;
   const riskLevel = dropOffRate > 50 ? 'HIGH' : dropOffRate > 25 ? 'MEDIUM' : 'LOW';
 

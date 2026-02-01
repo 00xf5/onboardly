@@ -3,61 +3,90 @@ import { FileText, Plus, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { store, Template } from "@/lib/store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
+import { PageLoader } from "@/components/Loader";
+
 export const TemplatesView = () => {
-    const [templates, setTemplates] = useState<Template[]>([]);
-    const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
     const [isAddTemplateDialogOpen, setIsAddTemplateDialogOpen] = useState(false);
     const [newTemplateTitle, setNewTemplateTitle] = useState("");
     const [newTaskTitle, setNewTaskTitle] = useState("");
 
     useEffect(() => {
-        const allTemplates = store.getTemplates();
-        setTemplates(allTemplates);
-        if (!selectedTemplate && allTemplates.length > 0) {
-            setSelectedTemplate(allTemplates[0]);
-        }
+        const syncTemplates = async () => {
+            const { collection, onSnapshot } = await import("firebase/firestore");
+            const { db } = await import("@/lib/firebase");
+            const unsubscribe = onSnapshot(collection(db, "templates"), (snapshot) => {
+                const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                setTemplates(list);
+                if (list.length > 0 && !selectedTemplate) {
+                    setSelectedTemplate(list[0]);
+                }
+                setLoading(false);
+            }, (error) => {
+                console.error("Firestore listener error:", error);
+                setLoading(false);
+            });
+            return unsubscribe;
+        };
+        let unsubscribe: any;
+        syncTemplates().then(unsub => unsubscribe = unsub);
+        return () => unsubscribe && unsubscribe();
     }, []);
 
-    const handleAddTemplate = () => {
+    if (loading) return <PageLoader />;
+
+    const handleAddTemplate = async () => {
         if (!newTemplateTitle) return;
-        const newTemplate = store.addTemplate({ title: newTemplateTitle, tasks: [] } as Omit<Template, 'id'>);
-        setTemplates(store.getTemplates());
-        setSelectedTemplate(newTemplate);
+        const { collection, addDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+
+        const newDoc = await addDoc(collection(db, "templates"), {
+            title: newTemplateTitle,
+            tasks: [],
+            createdAt: new Date().toISOString()
+        });
+
         setIsAddTemplateDialogOpen(false);
         setNewTemplateTitle("");
         toast.success("Template created");
     };
 
-    const handleUpdateTemplateTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleUpdateTemplateTitle = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!selectedTemplate) return;
-        const updatedTemplate = { ...selectedTemplate, title: e.target.value };
-        setSelectedTemplate(updatedTemplate);
-        store.updateTemplate(updatedTemplate);
+        const newTitle = e.target.value;
+        setSelectedTemplate({ ...selectedTemplate, title: newTitle });
+
+        const { doc, updateDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        await updateDoc(doc(db, "templates", selectedTemplate.id), { title: newTitle });
     };
 
-    const handleAddTask = () => {
+    const handleAddTask = async () => {
         if (!selectedTemplate || !newTaskTitle) return;
-        const updatedTemplate = {
-            ...selectedTemplate,
-            tasks: [...(selectedTemplate.tasks || []), { id: Date.now(), title: newTaskTitle }],
-        };
-        setSelectedTemplate(updatedTemplate);
-        store.updateTemplate(updatedTemplate);
+        const { doc, updateDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+
+        const newTask = { id: Date.now(), title: newTaskTitle };
+        const updatedTasks = [...(selectedTemplate.tasks || []), newTask];
+
+        await updateDoc(doc(db, "templates", selectedTemplate.id), { tasks: updatedTasks });
+        setSelectedTemplate({ ...selectedTemplate, tasks: updatedTasks });
         setNewTaskTitle("");
     };
 
-    const handleDeleteTask = (taskId: number | string) => {
+    const handleDeleteTask = async (taskId: number | string) => {
         if (!selectedTemplate) return;
-        const updatedTemplate = {
-            ...selectedTemplate,
-            tasks: selectedTemplate.tasks?.filter(task => task.id !== taskId),
-        };
-        setSelectedTemplate(updatedTemplate);
-        store.updateTemplate(updatedTemplate);
+        const { doc, updateDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+
+        const updatedTasks = selectedTemplate.tasks?.filter((task: any) => task.id !== taskId);
+        await updateDoc(doc(db, "templates", selectedTemplate.id), { tasks: updatedTasks });
+        setSelectedTemplate({ ...selectedTemplate, tasks: updatedTasks });
     };
 
     return (
@@ -69,8 +98,8 @@ export const TemplatesView = () => {
                 </div>
                 <div className="space-y-2 flex-1 overflow-y-auto">
                     {templates.map(template => (
-                        <div 
-                            key={template.id} 
+                        <div
+                            key={template.id}
                             className={`p-3 rounded-lg cursor-pointer ${selectedTemplate?.id === template.id ? 'bg-accent/20' : 'hover:bg-white/10'}`}
                             onClick={() => setSelectedTemplate(template)}
                         >
@@ -85,7 +114,7 @@ export const TemplatesView = () => {
                     <div>
                         <Input className="text-2xl font-bold bg-transparent border-none p-0 focus:ring-0" value={selectedTemplate.title} onChange={handleUpdateTemplateTitle} />
                         <p className="text-white/50 mt-2">Manage the tasks for this template.</p>
-                        
+
                         <div className="mt-6 space-y-2">
                             {selectedTemplate.tasks?.map(task => (
                                 <div key={task.id} className="flex items-center justify-between bg-white/10 p-3 rounded-lg">

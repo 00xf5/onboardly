@@ -1,22 +1,24 @@
-import { useState, useEffect } from 'react';
-import { store } from '@/lib/store';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
-const WebhooksView = () => {
-  const [webhookUrl, setWebhookUrl] = useState(() => store.getWebhookUrl());
+interface WebhooksViewProps {
+  clients?: any[];
+}
+
+const WebhooksView = ({ clients = [] }: WebhooksViewProps) => {
+  const [webhookUrl, setWebhookUrl] = useState(() => localStorage.getItem('onboardly_webhook_url') || '');
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setWebhookUrl(e.target.value);
-    store.saveWebhookUrl(e.target.value);
-    toast.success('Webhook URL saved.');
+    const val = e.target.value;
+    setWebhookUrl(val);
+    localStorage.setItem('onboardly_webhook_url', val);
   };
 
   const handleExport = () => {
-    const clients = store.getClients();
-    const headers = ['ID', 'Name', 'Email', 'Template', 'Progress', 'Status', 'Last Activity'];
+    const headers = ['ID', 'Name', 'Email', 'Template', 'Progress', 'Status', 'CreatedAt'];
     const csvContent = [
       headers.join(','),
-      ...clients.map(c => [c.id, c.name, c.email, c.template, c.progress, c.status, c.lastActivity].join(','))
+      ...clients.map(c => [c.id, c.name, c.email, c.template, c.progress, c.status, c.createdAt].join(','))
     ].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -37,10 +39,10 @@ const WebhooksView = () => {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-white/50">Webhook on Activation</label>
-          <input 
-            type="text" 
-            placeholder="https://your-webhook-url.com" 
-            className="w-full bg-white/5 p-2 rounded-lg mt-1" 
+          <input
+            type="text"
+            placeholder="https://your-webhook-url.com"
+            className="w-full bg-white/5 p-2 rounded-lg mt-1"
             value={webhookUrl}
             onChange={handleUrlChange}
           />

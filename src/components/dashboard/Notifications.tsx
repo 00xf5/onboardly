@@ -8,8 +8,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { store } from '@/lib/store';
-
 interface Notification {
   id: string;
   type: 'success' | 'error' | 'warning' | 'info';
@@ -64,28 +62,6 @@ const Notifications = () => {
     };
 
     loadNotifications();
-
-    // Listen for real-time notifications from store events
-    const handleClientUpdate = () => {
-      const clients = store.getClients();
-      const recentClient = clients[clients.length - 1];
-      
-      if (recentClient) {
-        const newNotification: Notification = {
-          id: Date.now().toString(),
-          type: 'info',
-          title: 'Client Activity',
-          message: `${recentClient.name} ${recentClient.status === 'completed' ? 'completed onboarding' : 'updated profile'}`,
-          timestamp: new Date().toISOString(),
-          read: false,
-        };
-        
-        setNotifications(prev => [newNotification, ...prev.slice(0, 9)]);
-      }
-    };
-
-    window.addEventListener('onboardly:clients:updated', handleClientUpdate);
-    return () => window.removeEventListener('onboardly:clients:updated', handleClientUpdate);
   }, []);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -100,13 +76,13 @@ const Notifications = () => {
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
+    setNotifications(prev =>
       prev.map(n => n.id === id ? { ...n, read: true } : n)
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => 
+    setNotifications(prev =>
       prev.map(n => ({ ...n, read: true }))
     );
   };
@@ -116,7 +92,7 @@ const Notifications = () => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
-    
+
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
@@ -135,9 +111,9 @@ const Notifications = () => {
           )}
         </Button>
       </DropdownMenuTrigger>
-      
-      <DropdownMenuContent 
-        align="end" 
+
+      <DropdownMenuContent
+        align="end"
         className="w-80 bg-[#1a1b23] border-white/5 text-white"
       >
         <div className="p-4 border-b border-white/5">
@@ -155,7 +131,7 @@ const Notifications = () => {
             )}
           </div>
         </div>
-        
+
         <div className="max-h-96 overflow-y-auto">
           {notifications.length === 0 ? (
             <div className="p-8 text-center text-white/40">
@@ -166,9 +142,8 @@ const Notifications = () => {
             notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className={`p-4 border-b border-white/5 last:border-b-0 cursor-pointer hover:bg-white/5 ${
-                  !notification.read ? 'bg-white/5' : ''
-                }`}
+                className={`p-4 border-b border-white/5 last:border-b-0 cursor-pointer hover:bg-white/5 ${!notification.read ? 'bg-white/5' : ''
+                  }`}
                 onClick={() => markAsRead(notification.id)}
               >
                 <div className="flex gap-3 w-full">

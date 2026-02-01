@@ -1,15 +1,25 @@
 import { useState, useEffect } from 'react';
-import { store } from '@/lib/store';
 import { formatDistanceToNow } from 'date-fns';
 import { CheckCircle, XCircle, SkipForward } from 'lucide-react';
 
 const RecentEvents = () => {
-  const [events, setEvents] = useState(() => store.getEventsForProject('default-proj'));
+  const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
-    const handler = () => setEvents(store.getEventsForProject('default-proj'));
-    window.addEventListener('onboardly:events:updated', handler as EventListener);
-    return () => window.removeEventListener('onboardly:events:updated', handler as EventListener);
+    const syncEvents = async () => {
+      const { collection, query, orderBy, limit, onSnapshot } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+
+      const q = query(collection(db, "events"), orderBy("timestamp", "desc"), limit(10));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setEvents(snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+      });
+      return unsubscribe;
+    };
+
+    let unsubscribe: any;
+    syncEvents().then(unsub => unsubscribe = unsub);
+    return () => unsubscribe && unsubscribe();
   }, []);
 
   const getEventIcon = (eventName: string) => {

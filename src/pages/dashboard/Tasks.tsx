@@ -1,10 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { FixedSizeList } from 'react-window';
-import { CheckSquare, Search, Plus, MoreVertical, Calendar, User, ShieldCheck, Zap, Target, Activity, Edit3, Trash2, ChevronRight, ChevronDown, Check, X, Clock } from "lucide-react";
+import { Search, Plus, User, Trash2, ChevronRight, ChevronDown, Check, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { store } from "@/lib/store";
 import {
     Dialog,
     DialogContent,
@@ -25,22 +24,23 @@ import {
 interface TasksViewProps {
     isAddDialogOpen: boolean;
     setIsAddDialogOpen: (open: boolean) => void;
+    clients: any[];
 }
 
 import useDebounce from "@/hooks/use-debounce";
 
-export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsAddDialogOpen }: TasksViewProps) {
-    const [tasks, setTasks] = useState(() => store.getTasksForProject('default-proj'));
-    const [clients, setClients] = useState(() => store.getClients());
+export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsAddDialogOpen, clients }: TasksViewProps) {
 
-    useEffect(() => {
-        const handler = () => {
-            setTasks(store.getTasksForProject('default-proj'));
-            setClients(store.getClients());
-        };
-        window.addEventListener('onboardly:clients:updated', handler as EventListener);
-        return () => window.removeEventListener('onboardly:clients:updated', handler as EventListener);
-    }, []);
+    const tasks = useMemo(() => {
+        return clients.flatMap(client =>
+            (client.tasks || []).map((task: any) => ({
+                ...task,
+                clientName: client.name,
+                clientId: client.id,
+                client: client.name // alias for compatibility
+            }))
+        );
+    }, [clients]);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [expandedTaskId, setExpandedTaskId] = useState<number | string | null>(null);
@@ -53,24 +53,62 @@ export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsA
         t.clientName.toLowerCase().includes(debouncedQuery.toLowerCase())
     ), [tasks, debouncedQuery]);
 
-    const toggleTask = (clientId: number | string, taskId: number | string, completed: boolean) => {
-        store.updateClientTaskStatus(clientId, taskId, !completed);
-        toast.success("Task status updated");
+    const toggleTask = async (clientId: string, taskId: number | string, completed: boolean) => {
+        const { doc, getDoc, updateDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+
+        const clientRef = doc(db, "clients", clientId);
+        const clientSnap = await getDoc(clientRef);
+        if (clientSnap.exists()) {
+            const clientData = clientSnap.data();
+            const newTasks = clientData.tasks.map((t: any) =>
+                t.id === taskId ? { ...t, completed: !completed } : t
+            );
+            const progress = (newTasks.filter((t: any) => t.completed).length / newTasks.length) * 100;
+            await updateDoc(clientRef, { tasks: newTasks, progress });
+            toast.success("Task status updated");
+        }
     };
 
-    const handleAddTask = () => {
+    const handleAddTask = async () => {
         if (!newTask.title || !newTask.client) return;
-        // Convert string client ID back to number for store methods
-        const clientId = typeof newTask.client === 'string' ? parseInt(newTask.client, 10) : newTask.client;
-        store.addTaskToClient(clientId, { title: newTask.title, priority: newTask.priority, due: newTask.due, description: "New operational objective." });
-        setIsAddDialogOpen(false);
-        setNewTask({ title: "", client: "", priority: "med", due: "Asap" });
-        toast.success("Objective Manifested");
+        const { doc, getDoc, updateDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+
+        const clientRef = doc(db, "clients", newTask.client);
+        const clientSnap = await getDoc(clientRef);
+        if (clientSnap.exists()) {
+            const clientData = clientSnap.data();
+            const taskObj = {
+                id: Date.now(),
+                title: newTask.title,
+                priority: newTask.priority,
+                due: newTask.due,
+                completed: false,
+                description: "New operational objective."
+            };
+            const newTasks = [...(clientData.tasks || []), taskObj];
+            const progress = (newTasks.filter((t: any) => t.completed).length / newTasks.length) * 100;
+            await updateDoc(clientRef, { tasks: newTasks, progress });
+            setIsAddDialogOpen(false);
+            setNewTask({ title: "", client: "", priority: "med", due: "Asap" });
+            toast.success("Objective Manifested");
+        }
     };
 
-    const handleDeleteTask = (clientId: number | string, taskId: number | string) => {
-        store.deleteTaskFromClient(clientId, taskId);
-        toast.success("Objective Archived");
+    const handleDeleteTask = async (clientId: string, taskId: number | string) => {
+        const { doc, getDoc, updateDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+
+        const clientRef = doc(db, "clients", clientId);
+        const clientSnap = await getDoc(clientRef);
+        if (clientSnap.exists()) {
+            const clientData = clientSnap.data();
+            const newTasks = clientData.tasks.filter((t: any) => t.id !== taskId);
+            const progress = newTasks.length > 0 ? (newTasks.filter((t: any) => t.completed).length / newTasks.length) * 100 : 0;
+            await updateDoc(clientRef, { tasks: newTasks, progress });
+            toast.success("Objective Archived");
+        }
     };
 
     // replaced by debounced + memoized filteredTasks earlier

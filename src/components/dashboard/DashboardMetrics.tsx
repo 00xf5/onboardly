@@ -1,31 +1,30 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, TrendingUp, Clock, AlertTriangle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { store } from '@/lib/store';
 
 interface DashboardMetricsProps {
   analytics: any;
   failingSteps: any[];
+  clients: any[];
 }
 
-const DashboardMetrics = ({ analytics, failingSteps }: DashboardMetricsProps) => {
+const DashboardMetrics = ({ analytics, failingSteps, clients }: DashboardMetricsProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Calculate real metrics from actual data
-  const clients = store.getClientsByProject('default-proj');
   const totalClients = clients.length;
-  const activatedClients = clients.filter(c => c.isActivated).length;
+  const activatedClients = clients.filter(c => c.isActivated || c.progress === 100).length;
   const activationRate = totalClients > 0 ? Math.round((activatedClients / totalClients) * 100) : 0;
-  
+
   // Calculate average time to activate (simplified)
   const avgTimeToActivate = activatedClients > 0 ? '2.1 days' : 'N/A';
-  
+
   // Calculate drop-off risk based on failing steps
   const dropOffRisk = failingSteps.length > 0 ? Math.max(...failingSteps.map(s => s.failRate)) : 0;
   const riskLevel = dropOffRisk > 50 ? 'High' : dropOffRisk > 25 ? 'Medium' : 'Low';
-  
+
   // Calculate funnel health
-  const funnelHealth = analytics.funnel && analytics.funnel.length > 0 
+  const funnelHealth = analytics.funnel && analytics.funnel.length > 0
     ? (analytics.funnel[analytics.funnel.length - 1]?.count || 0) > 40 ? 'Good' : 'Needs Work'
     : 'Unknown';
 
@@ -99,7 +98,7 @@ const DashboardMetrics = ({ analytics, failingSteps }: DashboardMetricsProps) =>
                 </div>
               ))}
             </div>
-            
+
             {/* Mini Funnel Preview */}
             <div className="mt-4 pt-4 border-t border-white/5">
               <h4 className="text-xs font-bold text-white/60 uppercase tracking-wider mb-3">Funnel Overview</h4>

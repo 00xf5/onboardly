@@ -18,33 +18,21 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { store } from "@/lib/store";
 
 export const SettingsView = () => {
-    const [plan, setPlan] = useState(() => store.getPlan()); // free | pro
+    const [plan, setPlan] = useState(() => {
+        const user = localStorage.getItem('onboardly_user');
+        return user ? JSON.parse(user).plan || 'free' : 'free';
+    });
     const [autoLockout, setAutoLockout] = useState(false);
     const [neuralCryptography, setNeuralCryptography] = useState(true);
 
     const handleUpgrade = async () => {
-        try {
-            const resp = await fetch('/api/create-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ clientId: 'admin', plan: 'premium' })
-            });
-            const json = await resp.json();
-            if (!json.ok) throw new Error(json.error || 'Payment creation failed');
-            const invoice = json.invoice;
-            const paymentUrl = invoice.invoice_url || invoice.payment_url || invoice.url || (invoice.payment && invoice.payment.url);
-            if (paymentUrl) {
-                window.open(paymentUrl, '_blank');
-                toast.success('Payment initiated — complete the purchase in the new tab.');
-            } else {
-                toast.error('Failed to retrieve payment URL');
-            }
-        } catch (err: any) {
-            toast.error(err?.message || String(err));
-        }
+        toast.info('Upgrade path shifted to direct checkout. Redirecting to payment portal...');
+        // Stub for future Stripe/LemonSqueezy integration
+        setTimeout(() => {
+            window.open('https://buy.stripe.com/demo', '_blank');
+        }, 1500);
     };
 
     return (

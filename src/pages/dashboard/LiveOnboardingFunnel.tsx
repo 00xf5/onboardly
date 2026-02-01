@@ -1,12 +1,18 @@
-import { FunnelStepAnalytics } from '@/lib/store';
 import { ArrowDown } from 'lucide-react';
+
+export interface FunnelStepAnalytics {
+  name: string;
+  count: number;
+  dropOff: number;
+  avgTime?: string;
+}
 
 const LiveOnboardingFunnel = ({ funnel }: { funnel: FunnelStepAnalytics[] }) => {
   return (
     <div className="bg-white/5 p-4 md:p-6 rounded-lg mb-8 overflow-x-auto">
       <h2 className="text-lg font-bold text-white mb-4">Live Onboarding Funnel</h2>
       <div className="flex items-center justify-between min-w-max md:min-w-0">
-        {funnel.map((step, index) => (
+        {(funnel || []).map((step, index) => (
           <div key={index} className="flex items-center flex-shrink-0">
             <div className="text-center">
               <p className="text-xs md:text-sm text-white/50">{step.name}</p>
