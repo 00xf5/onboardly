@@ -91,7 +91,7 @@ export const SettingsView = () => {
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-accent/5 blur-3xl" />
                                 <div className="flex items-start justify-between mb-1">
                                     <h4 className="text-sm font-black text-white uppercase">Pro</h4>
-                                    <span className="text-accent font-black text-lg tracking-tighter">$15<span className="text-[8px] text-white/40 uppercase font-black ml-1">/mo</span></span>
+                                    <span className="text-accent font-black text-lg tracking-tighter">$16<span className="text-[8px] text-white/40 uppercase font-black ml-1">/mo</span></span>
                                 </div>
                                 <p className="text-[9px] text-white/30 mb-5 font-medium uppercase tracking-tighter">Adv. automation suite (23,000 NGN/mo)</p>
                                 <ul className="space-y-2 mb-6">

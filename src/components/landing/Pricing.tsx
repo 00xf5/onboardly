@@ -21,7 +21,7 @@ const Pricing = () => {
     },
     {
       name: "Pro",
-      price: "$15",
+      price: "$16",
       period: "/month",
       description: "For rapid growth (23k NGN)",
       features: [

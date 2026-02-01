@@ -28,7 +28,7 @@ Onboardly simplifies the "Handshake" between you and your partners.
 
 ### 4. Financial Interface and Tier Gating
 The platform features a built-in **NOWPayments** portal for seamless tier upgrades and hard feature gating.
-- **Tier Escalation:** Move from the baseline *Nexus* tier to *Pro* ($15/mo or approx. 23,000 NGN).
+- **Tier Escalation:** Move from the baseline *Nexus* tier to *Pro* ($16/mo or approx. 23,000 NGN).
 - **Hard Gating:** Premium features like the Visual Flow Engine, Insights Feed, and Webhooks are restricted using the **LockedFeature** security component until a tier upgrade is verified.
 - **Crypto Support:** Integrated support for leading digital assets via the embedded payment nexus.
 

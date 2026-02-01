@@ -147,7 +147,7 @@ const Login = () => {
               size="lg"
               disabled={isLoading}
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? "Synchronizing Identity..." : "Sign In"}
             </Button>
           </form>
 

@@ -22,7 +22,7 @@ const Pricing = () => {
     },
     {
       name: "Pro",
-      price: "$15",
+      price: "$16",
       description: "For rapid growth teams (23,000 NGN)",
       features: [
         "Unlimited Blueprints",
@@ -99,8 +99,8 @@ const Pricing = () => {
               <div
                 key={index}
                 className={`relative bg-card border rounded-xl p-8 hover:shadow-lg transition-shadow ${plan.highlighted
-                    ? 'border-accent shadow-accent/20'
-                    : 'border-border'
+                  ? 'border-accent shadow-accent/20'
+                  : 'border-border'
                   }`}
               >
                 {plan.highlighted && (

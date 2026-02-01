@@ -190,7 +190,7 @@ const Signup = () => {
               size="lg"
               disabled={isLoading || !agreed}
             >
-              {isLoading ? "Creating account..." : "Create Account"}
+              {isLoading ? "Initializing Identity..." : "Create Account"}
             </Button>
           </form>
 
