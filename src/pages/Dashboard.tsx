@@ -74,11 +74,24 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchUser = () => {
+      const storedUser = localStorage.getItem('onboardly_user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    };
+
+    fetchUser();
+
+    window.addEventListener('user-update', fetchUser);
+    return () => window.removeEventListener('user-update', fetchUser);
+  }, []);
+
+  useEffect(() => {
     const storedUser = localStorage.getItem('onboardly_user');
     let currentUser: any = null;
     if (storedUser) {
       currentUser = JSON.parse(storedUser);
-      setUser(currentUser);
     }
 
     // Set up real-time listener for clients

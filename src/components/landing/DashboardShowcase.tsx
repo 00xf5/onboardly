@@ -24,25 +24,25 @@ const DashboardShowcase = () => {
               {/* Dashboard Screenshot */}
               <div className="relative">
                 <img
-                  src="/onboardly_dashboard_preview_1769901228764.png"
+                  src="/onboardly_dashboard_preview.png"
                   alt="Onboardly Dashboard"
                   className="w-full h-auto"
                 />
 
                 {/* Callouts */}
-                <div className="absolute top-20 left-8 bg-accent text-white px-3 py-1 rounded text-sm font-medium">
+                <div className="absolute top-[25%] left-[10%] bg-accent text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-glow animate-pulse">
                   Activation rate
                 </div>
 
-                <div className="absolute top-40 right-8 bg-accent text-white px-3 py-1 rounded text-sm font-medium">
+                <div className="absolute top-[25%] right-[10%] bg-accent text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-glow animate-pulse delay-75">
                   Funnel drop-off
                 </div>
 
-                <div className="absolute bottom-32 left-12 bg-accent text-white px-3 py-1 rounded text-sm font-medium">
+                <div className="absolute bottom-[20%] left-[10%] bg-accent text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-glow animate-pulse delay-150">
                   Failing steps
                 </div>
 
-                <div className="absolute bottom-20 right-12 bg-accent text-white px-3 py-1 rounded text-sm font-medium">
+                <div className="absolute bottom-[20%] right-[10%] bg-accent text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-glow animate-pulse delay-300">
                   Live events feed
                 </div>
               </div>

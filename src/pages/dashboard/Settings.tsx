@@ -26,6 +26,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
+import { PaymentPortal } from "@/components/dashboard/PaymentPortal";
 
 export const SettingsView = () => {
     const [plan, setPlan] = useState(() => {
@@ -38,6 +39,24 @@ export const SettingsView = () => {
 
     const handleUpgrade = async () => {
         setIsPaymentDialogOpen(true);
+    };
+
+    const onPaymentSuccess = () => {
+        const user = localStorage.getItem('onboardly_user');
+        if (user) {
+            const userData = JSON.parse(user);
+            userData.plan = 'pro';
+            localStorage.setItem('onboardly_user', JSON.stringify(userData));
+            setPlan('pro');
+
+            // Dispatch custom event for App.tsx state sync
+            window.dispatchEvent(new Event('user-update'));
+
+            // Close dialog after a delay
+            setTimeout(() => {
+                setIsPaymentDialogOpen(false);
+            }, 2000);
+        }
     };
 
     return (
@@ -143,26 +162,22 @@ export const SettingsView = () => {
                     <div className="p-6 bg-[#1a1b23]/40 rounded-2xl border border-white/5">
                         <h4 className="text-[8px] font-black uppercase tracking-widest text-white/20 mb-5">Command Gateway</h4>
                         <div className="space-y-6">
-                            <h2 className="text-2xl font-bold">Settings</h2>
+                            <h2 className="text-2xl font-bold text-white">Settings</h2>
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-white/50">JS snippet</label>
-                                    <input type="text" value="<script src='...'></script>" readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1" />
+                                    <input type="text" value="<script src='...'></script>" readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1 text-white/50" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-white/50">Event schema</label>
-                                    <textarea readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1" value={JSON.stringify({ user: '...', event: '...' }, null, 2)} />
+                                    <textarea readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1 text-white/50 h-24" value={JSON.stringify({ user: '...', event: '...' }, null, 2)} />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-white/50">Webhook config</label>
-                                    <input type="text" value="https://..." readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1" />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-white/50">User ID mapping</label>
-                                    <input type="text" value="..." readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1" />
+                                    <input type="text" value="https://..." readOnly className="w-full bg-white/5 p-2 rounded-lg mt-1 text-white/50" />
                                 </div>
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-2 mt-4">
                                 <Label className="text-[8px] uppercase font-black tracking-widest text-white/20 ml-1">Master Token</Label>
                                 <Input type="password" value="sk_nexus_********************" className="bg-white/5 h-8 text-[9px] rounded-lg border-white/5 text-white/20" readOnly />
                             </div>
@@ -179,26 +194,17 @@ export const SettingsView = () => {
 
             {/* Payment Portal Dialog */}
             <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-                <DialogContent className="sm:max-w-[460px] bg-[#1a1b23] border-white/10 text-white rounded-2xl p-0 overflow-hidden shadow-2xl backdrop-blur-3xl min-h-[720px]">
-                    <DialogHeader className="p-6 pb-0">
+                <DialogContent className="sm:max-w-[460px] bg-[#1a1b23] border-white/10 text-white rounded-2xl p-0 overflow-hidden shadow-2xl backdrop-blur-3xl">
+                    <DialogHeader className="p-6 pb-2">
                         <DialogTitle className="text-xl font-black tracking-tight uppercase italic">Nexus Tier Upgrade</DialogTitle>
                         <DialogDescription className="text-white/40 text-[11px]">Authorize the crypto-relay for Pro access.</DialogDescription>
                     </DialogHeader>
-                    <div className="flex justify-center items-center py-4 bg-white/[0.02]">
-                        <iframe
-                            src="https://nowpayments.io/embeds/payment-widget?iid=6136362268"
-                            width="410"
-                            height="696"
-                            frameBorder="0"
-                            scrolling="no"
-                            style={{ overflowY: 'hidden', borderRadius: '12px' }}
-                            title="NOWPayments Widget"
-                        >
-                            Can't load widget
-                        </iframe>
+                    <div className="p-6">
+                        <PaymentPortal onSuccess={onPaymentSuccess} />
                     </div>
                 </DialogContent>
             </Dialog>
         </div>
     );
 };
+
