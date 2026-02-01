@@ -40,7 +40,7 @@ export const PaymentPortal = ({ onSuccess }: PaymentPortalProps) => {
                         >
                             Can't load widget
                         </iframe>
-                        
+
                         {/* Background Decoration */}
                         <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent/5 rounded-full blur-[100px]" />
@@ -51,27 +51,31 @@ export const PaymentPortal = ({ onSuccess }: PaymentPortalProps) => {
                         <div className="p-4 rounded-xl bg-accent/[0.03] border border-accent/10 flex items-start gap-4">
                             <ShieldCheck className="w-5 h-5 text-accent mt-1 shrink-0" />
                             <div className="space-y-1">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Secure Relay Active</p>
-                                <p className="text-[9px] text-white/30 leading-relaxed font-medium">After completing the crypto transfer, click the verification button below to initialize your Pro configuration.</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-white">Cloud Verification Pending</p>
+                                <p className="text-[9px] text-white/30 leading-relaxed font-medium">Internal systems are monitoring the blockchain. Once the transaction is cleared, your nexus will automatically synchronize to the Pro tier.</p>
                             </div>
                         </div>
 
-                        <Button 
-                            onClick={simulateVerification} 
-                            disabled={verifying}
-                            className="w-full h-12 rounded-xl bg-accent text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-glow hover:bg-accent/90"
-                        >
-                            {verifying ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    Verifying Nexus Transaction...
-                                </>
-                            ) : (
-                                "Manual Verification"
-                            )}
-                        </Button>
-                        <p className="text-center text-[7px] font-black uppercase tracking-widest text-white/10 italic">
-                            Powered by NOWPayments Gateway • Processing Fee: 0%
+                        <div className="flex flex-col gap-3">
+                            <Button
+                                variant="outline"
+                                className="w-full h-11 rounded-xl border-white/5 bg-white/[0.02] text-white/40 font-black uppercase text-[9px] tracking-widest cursor-not-allowed"
+                            >
+                                <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                                Monitoring Relay...
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                onClick={() => toast.info("Relay support active. Standby for assistance.")}
+                                className="w-full h-11 rounded-xl text-white/20 font-black uppercase text-[8px] tracking-widest hover:text-white transition-colors"
+                            >
+                                Contact Support
+                            </Button>
+                        </div>
+
+                        <p className="text-center text-[7px] font-black uppercase tracking-widest text-white/5 italic">
+                            Transaction Hash Trace Required for Manual Activation
                         </p>
                     </div>
                 </>

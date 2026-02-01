@@ -41,21 +41,38 @@ export const SettingsView = () => {
         setIsPaymentDialogOpen(true);
     };
 
-    const onPaymentSuccess = () => {
+    const onPaymentSuccess = async () => {
         const user = localStorage.getItem('onboardly_user');
         if (user) {
             const userData = JSON.parse(user);
-            userData.plan = 'pro';
-            localStorage.setItem('onboardly_user', JSON.stringify(userData));
-            setPlan('pro');
 
-            // Dispatch custom event for App.tsx state sync
-            window.dispatchEvent(new Event('user-update'));
+            try {
+                // Persistent Trace: Update the cloud state
+                const { doc, updateDoc } = await import("firebase/firestore");
+                const { db } = await import("@/lib/firebase");
 
-            // Close dialog after a delay
-            setTimeout(() => {
-                setIsPaymentDialogOpen(false);
-            }, 2000);
+                const userRef = doc(db, "users", userData.id);
+                await updateDoc(userRef, { plan: 'pro' });
+
+                // Synchronize Local Reality
+                userData.plan = 'pro';
+                localStorage.setItem('onboardly_user', JSON.stringify(userData));
+                setPlan('pro');
+
+                // Alert the system nexus
+                window.dispatchEvent(new Event('user-update'));
+                toast.success("Nexus Upgrade Authorized", {
+                    description: "Your operational tier has been elevated to Pro."
+                });
+
+                // Secure exit
+                setTimeout(() => {
+                    setIsPaymentDialogOpen(false);
+                }, 1500);
+            } catch (error) {
+                console.error("Nexus upgrade failed:", error);
+                toast.error("Cloud synchronization failed. Contact support.");
+            }
         }
     };
 
