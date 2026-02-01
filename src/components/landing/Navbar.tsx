@@ -15,7 +15,7 @@ const Navbar = () => {
             <div className="w-9 h-9 rounded-xl bg-orange-500 p-1 flex items-center justify-center">
               <img src="/assets/brand/logo.png" alt="Onboardly" className="w-full h-full object-contain" />
             </div>
-            <span className="text-xl font-display font-black tracking-tight text-white uppercase italic">Onboardly <span className="text-accent underline decoration-accent/20">Nexus</span></span>
+            <span className="text-2xl font-display font-black tracking-tight text-foreground uppercase italic">Onboardly <span className="text-accent underline decoration-accent/20">Nexus</span></span>
           </Link>
 
           {/* Desktop Navigation */}

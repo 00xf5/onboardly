@@ -17,7 +17,7 @@ const Footer = () => {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-xl font-display font-black tracking-tight text-white uppercase italic">
+              <span className="text-xl font-display font-black tracking-tight text-foreground uppercase italic">
                 Onboardly{" "}
                 <span className="text-accent underline decoration-accent/20">
                   Nexus

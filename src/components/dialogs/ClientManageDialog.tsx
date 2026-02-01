@@ -124,10 +124,10 @@ const ClientManageDialog: React.FC<ClientManageDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] bg-[#1a1b23] border-white/5 text-white rounded-[1.5rem] p-6 shadow-2xl backdrop-blur-3xl">
+      <DialogContent className="sm:max-w-[480px] bg-card border-border text-foreground rounded-[1.5rem] p-6 shadow-2xl backdrop-blur-3xl">
         <DialogHeader className="mb-6">
           <DialogTitle className="text-xl font-black tracking-tight">Manage Client</DialogTitle>
-          <DialogDescription className="text-white/40 text-[11px]">
+          <DialogDescription className="text-muted-foreground/60 text-[11px]">
             Update client information and settings
           </DialogDescription>
         </DialogHeader>
@@ -135,52 +135,52 @@ const ClientManageDialog: React.FC<ClientManageDialogProps> = ({
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">
+              <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">
                 Name
               </Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="bg-white/5 h-10 text-xs rounded-xl border-white/5"
+                className="bg-muted h-10 text-xs rounded-xl border-none"
                 placeholder="Client name"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">
+              <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">
                 Email
               </Label>
               <Input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="bg-white/5 h-10 text-xs rounded-xl border-white/5"
+                className="bg-muted h-10 text-xs rounded-xl border-none"
                 placeholder="email@example.com"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">
+            <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">
               Company
             </Label>
             <Input
               value={formData.company}
               onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-              className="bg-white/5 h-10 text-xs rounded-xl border-white/5"
+              className="bg-muted h-10 text-xs rounded-xl border-none"
               placeholder="Company name"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">
+              <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">
                 Template
               </Label>
               <Select value={formData.template} onValueChange={(value) => setFormData({ ...formData, template: value })}>
-                <SelectTrigger className="bg-white/5 h-10 text-xs rounded-xl border-white/5">
+                <SelectTrigger className="bg-muted h-10 text-xs rounded-xl border-none">
                   <SelectValue placeholder="Select template" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1b23] border-white/5">
+                <SelectContent className="bg-card border-border">
                   {templates.map((template) => (
                     <SelectItem key={template.id} value={template.title} className="text-xs">
                       {template.title}
@@ -190,14 +190,14 @@ const ClientManageDialog: React.FC<ClientManageDialogProps> = ({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">
+              <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">
                 Status
               </Label>
               <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
                 <SelectTrigger className="bg-white/5 h-10 text-xs rounded-xl border-white/5">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1b23] border-white/5">
+                <SelectContent className="bg-card border-border">
                   <SelectItem value="pending" className="text-xs">Pending</SelectItem>
                   <SelectItem value="in_progress" className="text-xs">In Progress</SelectItem>
                   <SelectItem value="completed" className="text-xs">Completed</SelectItem>
@@ -207,14 +207,14 @@ const ClientManageDialog: React.FC<ClientManageDialogProps> = ({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">
+            <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">
               User Segment
             </Label>
             <Select value={formData.segment} onValueChange={(value) => setFormData({ ...formData, segment: value as UserSegment })}>
-              <SelectTrigger className="bg-white/5 h-10 text-xs rounded-xl border-white/5">
+              <SelectTrigger className="bg-muted h-10 text-xs rounded-xl border-none">
                 <SelectValue placeholder="Select segment" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a1b23] border-white/5">
+              <SelectContent className="bg-card border-border">
                 <SelectItem value="new_user" className="text-xs">New User</SelectItem>
                 <SelectItem value="returning_inactive" className="text-xs">Returning Inactive</SelectItem>
                 <SelectItem value="power_user" className="text-xs">Power User</SelectItem>
@@ -225,24 +225,24 @@ const ClientManageDialog: React.FC<ClientManageDialogProps> = ({
 
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">
+              <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">
                 Progress
               </Label>
               <span className="text-[9px] font-black text-accent">{client.progress}%</span>
             </div>
-            <Progress value={client.progress} className="h-2 bg-white/10" />
+            <Progress value={client.progress} className="h-2 bg-muted" />
           </div>
 
           {client.tasks && client.tasks.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">
+              <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">
                 Tasks ({client.tasks.filter(t => t.completed).length}/{client.tasks.length})
               </Label>
               <div className="max-h-32 overflow-y-auto space-y-1">
                 {client.tasks.map((task) => (
                   <div key={task.id} className="flex items-center gap-2 text-xs">
-                    <div className={`w-2 h-2 rounded-full ${task.completed ? 'bg-success' : 'bg-white/20'}`} />
-                    <span className="text-white/60">{task.title}</span>
+                    <div className={`w-2 h-2 rounded-full ${task.completed ? 'bg-success' : 'bg-muted'}`} />
+                    <span className="text-muted-foreground">{task.title}</span>
                   </div>
                 ))}
               </div>
@@ -262,7 +262,7 @@ const ClientManageDialog: React.FC<ClientManageDialogProps> = ({
             <Button
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="bg-white/5 hover:bg-white/10 h-10 rounded-xl font-black uppercase text-[10px] tracking-widest"
+              className="bg-muted hover:bg-accent/10 h-10 rounded-xl font-black uppercase text-[10px] tracking-widest"
             >
               Cancel
             </Button>

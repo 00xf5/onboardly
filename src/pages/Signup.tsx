@@ -105,7 +105,7 @@ const Signup = () => {
               <div className="w-10 h-10 rounded-xl bg-orange-500 p-1 flex items-center justify-center shadow-glow">
                 <img src="/assets/brand/logo.png" alt="Onboardly" className="w-full h-full object-contain" />
               </div>
-              <span className="text-2xl font-display font-black tracking-tight text-white uppercase italic">Onboardly <span className="text-accent underline decoration-accent/20">Nexus</span></span>
+              <span className="text-2xl font-display font-black tracking-tight text-foreground uppercase italic">Onboardly <span className="text-accent underline decoration-accent/20">Nexus</span></span>
             </Link>
             <h1 className="text-2xl font-bold text-foreground mb-2">Create your account</h1>
             <p className="text-muted-foreground">

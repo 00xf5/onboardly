@@ -339,7 +339,7 @@ const Dashboard = () => {
             </div>
             {sidebarOpen && (
               <div className="flex flex-col animate-in fade-in duration-500">
-                <span className="text-[11px] font-black uppercase tracking-tighter text-white">Onboardly</span>
+                <span className="text-[11px] font-black uppercase tracking-tighter text-foreground">Onboardly</span>
                 <span className="text-[7px] font-black uppercase tracking-[0.3em] text-accent mt-[-2px]">Nexus</span>
               </div>
             )}
@@ -472,19 +472,19 @@ const Dashboard = () => {
 
       {/* Dialog for New Client */}
       <Dialog open={isNewClientDialogOpen} onOpenChange={setIsNewClientDialogOpen}>
-        <DialogContent className="sm:max-w-[360px] bg-[#1a1b23] border-white/5 text-white rounded-[1.5rem] p-6 shadow-2xl backdrop-blur-3xl">
+        <DialogContent className="sm:max-w-[360px] bg-card border-border text-foreground rounded-[1.5rem] p-6 shadow-2xl backdrop-blur-3xl">
           <DialogHeader className="mb-4">
             <DialogTitle className="text-xl font-black tracking-tight">Partner Integration</DialogTitle>
-            <DialogDescription className="text-white/40 text-[11px]">Sync a new inbound partner with the nexus.</DialogDescription>
+            <DialogDescription className="text-muted-foreground/60 text-[11px]">Sync a new inbound partner with the nexus.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">Partner Identity</Label>
-              <Input placeholder="John Doe" className="bg-white/5 h-10 text-xs rounded-xl border-white/5" value={newClient.name} onChange={(e) => setNewClient({ ...newClient, name: e.target.value })} />
+              <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">Partner Identity</Label>
+              <Input placeholder="John Doe" className="bg-muted h-10 text-xs rounded-xl border-none" value={newClient.name} onChange={(e) => setNewClient({ ...newClient, name: e.target.value })} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[9px] uppercase font-black tracking-widest text-white/20 ml-1">Neural Address (Email)</Label>
-              <Input placeholder="john@nexus.io" className="bg-white/5 h-10 text-xs rounded-xl border-white/5" value={newClient.email} onChange={(e) => setNewClient({ ...newClient, email: e.target.value })} />
+              <Label className="text-[9px] uppercase font-black tracking-widest text-muted-foreground/40 ml-1">Neural Address (Email)</Label>
+              <Input placeholder="john@nexus.io" className="bg-muted h-10 text-xs rounded-xl border-none" value={newClient.email} onChange={(e) => setNewClient({ ...newClient, email: e.target.value })} />
             </div>
           </div>
           <DialogFooter className="mt-6">
