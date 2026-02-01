@@ -202,7 +202,24 @@
     animation-delay: 0.4s;
   }
 
-  /* Compact Mobile Utilities */
+    .hero-gradient {
+        background: linear-gradient(135deg, rgba(11, 12, 16, 0.95) 0%, rgba(12, 13, 18, 0.9) 100%), 
+                    url('/auth_pattern.png');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-gradient::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, transparent 0%, rgba(11, 12, 16, 0.4) 100%);
+        pointer-events: none;
+    }
+
+    /* Compact Mobile Utilities */
   @media (max-width: 640px) {
     .mobile-compact-padding {
       @apply p-4;

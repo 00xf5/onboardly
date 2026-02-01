@@ -161,17 +161,25 @@ const Login = () => {
       </div>
 
       {/* Right side - Decorative */}
-      <div className="hidden lg:flex flex-1 hero-gradient items-center justify-center p-12">
-        <div className="max-w-md text-center">
-          <div className="w-24 h-24 rounded-2xl bg-orange-500 p-3 shadow-glow flex items-center justify-center mx-auto mb-8">
-            <img src="/assets/brand/logo.png" alt="Onboardly" className="w-full h-full object-contain" />
+      <div className="hidden lg:flex flex-1 hero-gradient items-center justify-center p-12 relative">
+        <div className="absolute inset-0 bg-accent/5 mix-blend-overlay" />
+        <div className="max-w-md text-center relative z-10">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[2.5rem] shadow-2xl animate-in fade-in zoom-in duration-1000">
+            <div className="w-20 h-20 rounded-2xl bg-accent p-4 shadow-glow flex items-center justify-center mx-auto mb-8 rotate-3 transition-transform hover:rotate-0 duration-500">
+              <img src="/assets/brand/logo.png" alt="Onboardly" className="w-full h-full object-contain" />
+            </div>
+            <h2 className="text-3xl font-black text-white mb-4 tracking-tight uppercase italic">
+              Streamline your <span className="text-accent underline decoration-accent/30">onboarding</span>
+            </h2>
+            <p className="text-white/40 text-xs font-black uppercase tracking-[0.2em] leading-relaxed">
+              Automate client onboarding, track progress, and deliver a professional experience every time.
+            </p>
+            <div className="mt-8 flex items-center justify-center gap-4 opacity-30">
+              <div className="h-px w-12 bg-white" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white">Nexus Phase 1</span>
+              <div className="h-px w-12 bg-white" />
+            </div>
           </div>
-          <h2 className="text-3xl font-bold text-primary-foreground mb-4">
-            Streamline your onboarding
-          </h2>
-          <p className="text-primary-foreground/70">
-            Automate client onboarding, track progress, and deliver a professional experience every time.
-          </p>
         </div>
       </div>
     </div>
