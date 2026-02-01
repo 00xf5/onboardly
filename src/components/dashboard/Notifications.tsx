@@ -17,53 +17,42 @@ interface Notification {
   read: boolean;
 }
 
-const Notifications = () => {
+const Notifications = ({ user }: { user: any }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load initial notifications
-    const loadNotifications = () => {
-      const mockNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'success',
-          title: 'Client Activated',
-          message: 'John Doe completed onboarding successfully and has been promoted to verified partner status in the US-EAST quadrant.',
-          timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-          read: false,
-        },
-        {
-          id: '2',
-          type: 'warning',
-          title: 'High Drop-off Rate',
-          message: 'Step 3 "Asset Integration" has a 68% failure rate over the last 24 mission hours. Action required.',
-          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-          read: false,
-        },
-        {
-          id: '3',
-          type: 'info',
-          title: 'New Feature Available',
-          message: 'Dashboard metrics now support collapsible neural expansion for better data density management.',
-          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-          read: true,
-        },
-        {
-          id: '4',
-          type: 'error',
-          title: 'Email Delivery Failed',
-          message: 'Failed to send welcome email relay to client@vortex.io. Terminal error code: 0x882.',
-          timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-          read: true,
-        },
-      ];
-      setNotifications(mockNotifications);
+    if (!user?.id) return;
+
+    const syncNotifications = async () => {
+      const { collection, query, where, orderBy, limit, onSnapshot } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+
+      const q = query(
+        collection(db, "notifications"),
+        where("userId", "==", user.id),
+        orderBy("timestamp", "desc"),
+        limit(20)
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const fetchedNotifications = snapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id
+        })) as Notification[];
+        setNotifications(fetchedNotifications);
+      }, (error) => {
+        console.error("Signal Stream Error:", error);
+      });
+
+      return unsubscribe;
     };
 
-    loadNotifications();
-  }, []);
+    let unsubscribe: any;
+    syncNotifications().then(unsub => unsubscribe = unsub);
+    return () => unsubscribe && unsubscribe();
+  }, [user?.id]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -76,16 +65,30 @@ const Notifications = () => {
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      const { doc, updateDoc } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      await updateDoc(doc(db, "notifications", id), { read: true });
+    } catch (error) {
+      console.error("Failed to mark read:", error);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(n => ({ ...n, read: true }))
-    );
+  const markAllAsRead = async () => {
+    try {
+      const { doc, updateDoc, writeBatch } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+      const batch = writeBatch(db);
+
+      notifications.filter(n => !n.read).forEach(n => {
+        batch.update(doc(db, "notifications", n.id), { read: true });
+      });
+
+      await batch.commit();
+    } catch (error) {
+      console.error("Failed to mark all read:", error);
+    }
   };
 
   const formatTime = (timestamp: string) => {
@@ -187,9 +190,15 @@ const Notifications = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
-                        setNotifications(prev => prev.filter(n => n.id !== notification.id));
+                        try {
+                          const { doc, deleteDoc } = await import("firebase/firestore");
+                          const { db } = await import("@/lib/firebase");
+                          await deleteDoc(doc(db, "notifications", notification.id));
+                        } catch (error) {
+                          console.error("Failed to delete notification:", error);
+                        }
                       }}
                       className="h-7 w-7 rounded-lg hover:bg-red-500/20 hover:text-red-500 text-muted-foreground/30"
                       title="Dismiss Signal"

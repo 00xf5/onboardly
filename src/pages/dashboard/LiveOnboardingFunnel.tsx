@@ -9,19 +9,21 @@ export interface FunnelStepAnalytics {
 
 const LiveOnboardingFunnel = ({ funnel }: { funnel: FunnelStepAnalytics[] }) => {
   return (
-    <div className="bg-white/5 p-4 md:p-6 rounded-lg mb-8 overflow-x-auto">
-      <h2 className="text-lg font-bold text-white mb-4">Live Onboarding Funnel</h2>
+    <div className="bg-card/40 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-border mb-8 overflow-x-auto shadow-lg">
+      <h2 className="text-sm font-black text-foreground uppercase tracking-widest mb-6">Live Activation Funnel</h2>
       <div className="flex items-center justify-between min-w-max md:min-w-0">
         {(funnel || []).map((step, index) => (
           <div key={index} className="flex items-center flex-shrink-0">
-            <div className="text-center">
-              <p className="text-xs md:text-sm text-white/50">{step.name}</p>
-              <p className="text-lg md:text-2xl font-bold text-white">{step.count}%</p>
+            <div className="text-center bg-muted/30 px-4 py-3 rounded-xl border border-border/50">
+              <p className="text-[10px] uppercase font-black text-muted-foreground/40 mb-1">{step.name}</p>
+              <p className="text-xl md:text-2xl font-black text-foreground italic">{step.count}%</p>
             </div>
             {index < funnel.length - 1 && (
-              <div className="text-center mx-2 md:mx-4 flex-shrink-0">
-                <ArrowDown className="w-3 h-3 md:w-4 md:h-4 text-red-500 mx-auto" />
-                <p className="text-xs text-red-500 mt-1">{funnel[index + 1].dropOff}%</p>
+              <div className="text-center mx-2 md:mx-6 flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-1">
+                  <ArrowDown className="w-4 h-4 text-red-500" />
+                </div>
+                <p className="text-[10px] font-black text-red-500/60 uppercase tracking-tighter">-{funnel[index + 1].dropOff}%</p>
               </div>
             )}
           </div>

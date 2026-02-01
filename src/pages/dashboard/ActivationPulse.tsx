@@ -40,16 +40,16 @@ const ActivationPulse = ({ analytics, clients = [] }: { analytics: any, clients?
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
       {stats.map((stat, index) => (
-        <div key={index} className="bg-white/5 p-4 md:p-6 rounded-lg">
-          <p className="text-xs md:text-sm text-white/50 mb-2">{stat.label}</p>
-          <p className="text-2xl md:text-4xl font-bold text-white">{stat.value}</p>
-          <div className="flex items-center text-xs md:text-sm mt-2">
+        <div key={index} className="bg-card/40 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-border group hover:border-accent/30 transition-all duration-500 shadow-xl">
+          <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground/50 mb-3">{stat.label}</p>
+          <p className="text-2xl md:text-3xl font-black text-foreground italic">{stat.value}</p>
+          <div className="flex items-center text-[10px] font-bold mt-4 uppercase tracking-tighter">
             {stat.trendDirection === 'up' ? (
-              <ArrowUp className={`w-3 h-3 md:w-4 md:h-4 ${stat.label === 'Drop-off Risk' ? 'text-red-500' : 'text-green-500'}`} />
+              <ArrowUp className={`w-3 h-3 ${stat.label === 'Drop-off Risk' ? 'text-red-500' : 'text-accent'}`} />
             ) : (
-              <ArrowDown className="w-3 h-3 md:w-4 md:h-4 text-green-500" />
+              <ArrowDown className="w-3 h-3 text-accent" />
             )}
-            <span className={`ml-1 ${stat.label === 'Drop-off Risk' ? 'text-red-500' : 'text-white/70'}`}>
+            <span className={`ml-1.5 ${stat.label === 'Drop-off Risk' ? 'text-red-500' : 'text-muted-foreground/60'}`}>
               {stat.trend}
             </span>
           </div>

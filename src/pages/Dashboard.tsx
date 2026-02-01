@@ -390,7 +390,7 @@ const Dashboard = () => {
 
         <div className="p-3 border-t border-border">
           <div className={`p-1.5 rounded-xl bg-muted/50 flex items-center gap-2 ${!sidebarOpen && 'justify-center'}`}>
-            <Avatar className="w-6 h-6 rounded-lg ring-1 ring-white/10">
+            <Avatar className="w-6 h-6 rounded-lg ring-1 ring-border">
               <AvatarFallback className="bg-accent/10 text-accent font-bold text-[9px]">
                 {user?.name?.[0] || 'U'}
               </AvatarFallback>
@@ -413,7 +413,7 @@ const Dashboard = () => {
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
-                className="md:hidden text-white/20 hover:text-white transition-colors"
+                className="md:hidden text-muted-foreground/30 hover:text-foreground transition-colors"
               >
                 <Menu className="w-5 h-5" />
               </button>
@@ -425,7 +425,7 @@ const Dashboard = () => {
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-accent" />
                 <Input
                   placeholder="Search clients, tasks..."
-                  className="w-32 md:w-48 bg-white/5 border-transparent h-8 text-[10px] pl-9 rounded-md focus-visible:ring-accent/10 focus-visible:w-64 transition-all"
+                  className="w-32 md:w-48 bg-muted border-none h-8 text-[10px] pl-9 rounded-md focus-visible:ring-accent/10 focus-visible:w-64 transition-all text-foreground placeholder:text-muted-foreground/30"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -448,7 +448,7 @@ const Dashboard = () => {
               </Button>
               <div className="flex items-center gap-2 border-l border-border pl-3">
                 <ThemeToggle />
-                <Notifications />
+                <Notifications user={user} />
                 <Button
                   variant="ghost"
                   size="icon"
