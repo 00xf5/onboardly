@@ -31,6 +31,7 @@ const Signup = () => {
     const { createUserWithEmailAndPassword, updateProfile } = await import("firebase/auth");
     const { doc, setDoc } = await import("firebase/firestore");
     const { auth, db } = await import("@/lib/firebase");
+    const { sendWelcomeEmail } = await import("@/lib/email");
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -47,6 +48,15 @@ const Signup = () => {
         createdAt: new Date().toISOString()
       };
       await setDoc(doc(db, "users", user.uid), userDoc);
+
+      // Send welcome email (non-blocking - don't fail signup if email fails)
+      sendWelcomeEmail(email, name).then((result) => {
+        if (result.success) {
+          console.log('✅ Welcome email sent successfully!');
+        } else {
+          console.warn('⚠️ Welcome email failed to send:', result.error);
+        }
+      });
 
       localStorage.setItem('onboardly_user', JSON.stringify(userDoc));
       toast.success('Account created successfully!');
