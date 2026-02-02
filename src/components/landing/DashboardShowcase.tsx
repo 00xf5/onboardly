@@ -3,8 +3,8 @@ const DashboardShowcase = () => {
     <section className="py-24 bg-muted/30">
       <div className="container mx-auto px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-8 text-center">
-            One screen. One truth.
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-8 text-center uppercase italic tracking-tight">
+            Hunt the Churn. <span className="text-accent underline decoration-accent/20">In Real-time.</span>
           </h2>
 
           <div className="relative max-w-5xl mx-auto">

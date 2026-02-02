@@ -10,17 +10,13 @@ const Hero = () => {
           {/* Left Side - Message */}
           <div className="max-w-2xl">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight tracking-tight">
-              Your users signed up.
-              <br />
-              <span className="text-accent">They never activated.</span>
-              <br />
-              Fix that.
+              Stop watching your users <span className="text-accent underline decoration-accent/20">ghost you</span> after signup.
             </h1>
-            
+
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Onboardly is a checklist-driven onboarding and activation engine that shows you exactly where users drop off — and what to fix.
+              Most users never reach your "Aha!" moment. Onboardly drags them back, activates them, and proves it with numbers.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/signup">
                 <Button variant="accent" size="lg" className="text-base px-8 py-3 min-w-[160px]">
@@ -35,7 +31,7 @@ const Hero = () => {
               </Link>
             </div>
           </div>
-          
+
           {/* Right Side - Dashboard Mock */}
           <div className="relative">
             <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
@@ -50,7 +46,7 @@ const Hero = () => {
                   <div className="w-full h-6 bg-muted rounded" />
                 </div>
               </div>
-              
+
               {/* Dashboard Content */}
               <div className="p-6 bg-gradient-to-b from-muted/10 to-muted/5">
                 <div className="grid grid-cols-3 gap-4 mb-6">
@@ -70,7 +66,7 @@ const Hero = () => {
                     <div className="text-xs text-green-400 mt-1">↑ 8% today</div>
                   </div>
                 </div>
-                
+
                 <div className="bg-card border border-border rounded-lg p-4">
                   <div className="text-sm font-medium text-foreground mb-3">Failing Steps</div>
                   <div className="space-y-2">

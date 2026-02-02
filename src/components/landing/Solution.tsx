@@ -1,26 +1,26 @@
-import { CheckSquare, Target, AlertTriangle, Monitor } from "lucide-react";
+import { Zap, Sparkles, AlertTriangle, Target } from "lucide-react";
 
 const Solution = () => {
   const solutions = [
     {
-      icon: CheckSquare,
-      title: "Checklist-Driven Activation",
-      description: "Activation is defined, tracked, and enforced.",
+      icon: Zap,
+      title: "Ghost Recovery",
+      description: "Automated 'nudge' signals drag users back the second they stagnate.",
     },
     {
-      icon: Target,
-      title: "Contextual Onboarding",
-      description: "Tooltips appear only when they matter.",
+      icon: Sparkles,
+      title: "Zero-Thinking AI",
+      description: "The AI Forge builds your entire blueprint in seconds. No thinking required.",
     },
     {
       icon: AlertTriangle,
-      title: "Failing Step Detection",
-      description: "See exactly where users quit.",
+      title: "Friction Detection",
+      description: "See the exact step where your revenue is leaking and fix it instantly.",
     },
     {
-      icon: Monitor,
-      title: "Single-Screen Dashboard",
-      description: "One place to understand activation health.",
+      icon: Target,
+      title: "One Version of Truth",
+      description: "No more guessing. Every user accounted for in one central workspace.",
     },
   ];
 
@@ -29,9 +29,9 @@ const Solution = () => {
       <div className="container mx-auto px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-16 text-center">
-            What Onboardly actually does
+            The Activation Arsenal
           </h2>
-          
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {solutions.map((solution, index) => (
               <div key={index} className="text-center">
