@@ -53,7 +53,9 @@
             bottom: 72px;
             right: 0;
             width: 320px;
+            max-width: calc(100vw - 48px);
             height: 480px;
+            max-height: calc(100vh - 120px);
             background: #0b0c10;
             border-radius: 24px;
             box-shadow: 0 12px 48px rgba(0,0,0,0.5);

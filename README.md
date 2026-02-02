@@ -1,87 +1,85 @@
-# Onboardly Nexus Mk-II 🚀
+# Onboardly Mk-II
 
-Onboardly is a high-performance, checklist-driven **User Activation Engine** designed to bridge the "Aha! Moment" gap. It transforms passive signups into activated power-users through structured onboarding logic, real-time telemetry, and automated engagement relays.
+Onboardly is a high-performance **User Onboarding Platform** designed to help your customers start using your product successfully. It helps you guide new users through organized checklists, live progress tracking, and automatic updates.
 
-## 🌌 The Nexus Protocol
-Onboardly operates as a centralized command center where every partner (client) follows a pre-defined **Sequence Logic Blueprint** to reach full product activation.
-
----
-
-## 💎 Advanced Features (Mk-II)
-
-### 1. 👻 Ghost Nudge Subsystem (Retention Engine)
-Passive tracking is a thing of the past. Onboardly now includes an automated retention daemon.
-- **Idle Detection:** The system monitors partner activity timestamps.
-- **Automated Re-activation:** If a partner stagnates for >48 hours, a "Ghost Nudge" signal is automatically dispatched via email to bring them back into the flow.
-- **Vercel Cron Powered:** Reliable, serverless execution of retention logic.
-
-### 2. 🤖 AI Blueprint Forge
-Eliminate the "Blank Page" friction for new SaaS owners. 
-- **Sequence Generation:** Input any product URL and description.
-- **Automated Logic:** The AI Forge analyzes the context and generates a 5-step strategic onboarding sequence designed for maximum conversion.
-
-### 3. 🛡️ Trojan Horse Widget (Deep Integration)
-Don't force users to leave your app. The Trojan Horse Widget allows you to embed the entire Onboardly experience into your own product via a 3-line JS script.
-- **Floating HUD:** A non-intrusive activator that sits in the corner of your app.
-- **Iframe Isolation:** Secure, cross-origin communication between your product and the Nexus.
-
-### 4. 🪝 Nexus Relay MK-II (Outbound Signals)
-Bridge your product core with external marketing stacks.
-- **Webhooks:** Instant JSON payloads pushed to your backend on task completion.
-- **Automated Emails:** Real-time "Objective Accomplished" notifications via **Resend**.
-- **Telemetry Logs:** Full visibility into outbound signals through the Relay Telemetry feed.
-
-### 5. 🎢 Dopamine Loops & Celebrations
-Onboarding should feel like a win. 
-- **Milestone Confetti:** High-performance canvas celebrations trigger on objective completion.
-- **Success Overlays:** Branded status modals that reinforce progress and incentivize completion.
+## How it Works
+Onboardly acts as a central workspace where every customer follows a clear **Onboarding Plan** to get the most out of your software.
 
 ---
 
-## 📊 High-Fidelity Intelligence
-- **Live Funnel Analysis:** Real-time calculation of drop-offs based on actual database heuristics.
-- **Activation Pulse:** Dynamic insight into activation rates, time-to-value, and risk levels.
-- **Failing Steps Identification:** Automated detection of specific blueprint tasks that are blocking your growth.
+## Features (Mk-II)
+
+### 1. Automatic Reminders
+Simple tracking isn't enough. Onboardly helps you bring users back when they stop moving forward.
+- **Inactivity Detection:** The system knows when a customer hasn't made progress.
+- **Gentle Nudges:** If a customer stops for more than 48 hours, a friendly reminder is automatically sent via email to help them jump back in.
+
+### 2. AI Step Generator
+Stop worrying about what steps to include.
+- **Quick Setup:** Just enter your product link and a short description.
+- **Smart Suggestions:** The AI analyzes your product and generates a 5-step onboarding plan designed to get your users active quickly.
+
+### 3. Integrated Widget
+You don't have to send users to another website. You can put Onboardly right inside your own app.
+- **Floating Button:** A small, clean button that stays in the corner of your app.
+- **Built-in Checklist:** Users can see and complete their tasks without ever leaving your product.
+
+### 4. Notifications & Webhooks
+Connect Onboardly to the other tools you use.
+- **Webhooks:** Send data to your own server automatically when a task is finished.
+- **Automatic Emails:** Send real-time "Task Completed" updates using Resend.
+- **Activity Logs:** See exactly when notifications were sent and if they were successful.
+
+### 5. Success Moments & Celebrations
+Onboarding should feel rewarding for your customers.
+- **Celebration Effects:** Fun screen effects trigger whenever a customer reaches a goal.
+- **Completion Badges:** Professional messages that congratulate users when they finish their setup.
 
 ---
 
-## 🛠️ Technology Stack
-- **Core:** React 18 + Vite + Tailwind CSS (Aesthetic: Modern Glassmorphism)
-- **Persistence:** Firebase (Auth + Firestore Real-time Listeners)
-- **Backend:** Vercel Serverless Functions + Vercel Cron Jobs
-- **Communication:** Resend API + Webhook Relays
-- **Intelligence:** AI Blueprint Forge (Sequence Generation Logic)
-- **Celebrations:** Canvas-Confetti (Dynamic Load)
+## Smart Analytics
+- **Funnel Tracking:** See exactly where users are dropping off in your onboarding process.
+- **Activation Rates:** Get clear insights into how many users are successfully finishing their setup.
+- **Problem Detection:** Automatically find which specific steps are confusing or blocking your customers.
 
 ---
 
-## 🚀 Rapid Integration
+## Technology Behind the Scenes
+- **Frontend:** React 18 + Vite + Tailwind CSS
+- **Database:** Firebase Real-time Data
+- **Backend:** Vercel Serverless Functions
+- **Emails:** Resend API
+- **AI Logic:** Smart Sequence Generation
+
+---
+
+## Quick Integration
 
 ### JS Widget Snippet
-Paste this at the end of your `<body>` tag:
+Add this small piece of code to your website:
 ```html
 <script 
   src="https://onboardly-nexus.vercel.app/widget-loader.js" 
-  data-onboardly-id="YOUR_PARTNER_SLUG"
+  data-onboardly-id="YOUR_CUSTOMER_ID"
 ></script>
 ```
 
-### Environment Configuration
+### Environment Settings
 ```env
 VITE_FIREBASE_API_KEY=...
 RESEND_API_KEY=...
-GEMINI_API_KEY=... # For AI Forge
-APP_URL=https://your-deployment.vercel.app
+GEMINI_API_KEY=... 
+APP_URL=https://your-app.vercel.app
 ```
 
 ---
 
-## 📂 Project Architecture
-- `/api/`: Serverless Backend (Relays, AI Forge, Crons).
-- `/public/widget-loader.js`: The standalone JS entry point.
-- `/src/lib/relay.ts`: Outbound signal orchestration.
-- `/src/pages/WidgetView.tsx`: The high-density embedded experience.
-- `/src/pages/dashboard/IntegrationView.tsx`: The primary developer portal.
+## Project Layout
+- `/api/`: Backend functions for emails and AI.
+- `/public/widget-loader.js`: The script for the embedded widget.
+- `/src/lib/`: Logic for sending updates.
+- `/src/pages/WidgetView.tsx`: The design for the embedded checklist.
+- `/src/pages/dashboard/IntegrationView.tsx`: The developer guide in the dashboard.
 
 ---
-*Created for Product Growth Engineers by the Onboardly Core Team. Accelerate your path to "Aha!".*
+*Created by the Onboardly Team. Built to help your customers succeed.*
