@@ -227,24 +227,55 @@ const Dashboard = () => {
 
   const analytics = useMemo(() => {
     const total = clients.length;
-    const activated = clients.filter((c: any) => c.progress === 100 || c.isActivated).length;
+    const activated = clients.filter((c: any) => c.progress === 100).length;
     const activationRate = total > 0 ? Math.round((activated / total) * 100) : 0;
 
-    // Simple funnel mock based on real counts
+    // Real-time funnel calculation
+    // Step 1: Registered (All clients in database)
+    // Step 2: Intermediate (Progress > 0)
+    // Step 3: Deep Engagement (Progress > 50)
+    // Step 4: Activated (Progress = 100)
+
+    const step2 = clients.filter((c: any) => c.progress > 0).length;
+    const step3 = clients.filter((c: any) => c.progress > 50).length;
+
+    const getRate = (count: number) => total > 0 ? Math.round((count / total) * 100) : 0;
+
     return {
       funnel: [
-        { name: 'Signup', count: 100, dropOff: 0, avgTime: '1m' },
-        { name: 'Step 1', count: 85, dropOff: 15, avgTime: '2m' },
-        { name: 'Step 2', count: 60, dropOff: 25, avgTime: '3m' },
-        { name: 'Activated', count: activationRate, dropOff: 100 - activationRate, avgTime: 'N/A' }
+        { name: 'Onboarded', count: 100, dropOff: 100 - getRate(step2), avgTime: 'Real-time' },
+        { name: 'Initial Action', count: getRate(step2), dropOff: getRate(step2) - getRate(step3), avgTime: 'Live' },
+        { name: 'Deep Setup', count: getRate(step3), dropOff: getRate(step3) - activationRate, avgTime: 'Active' },
+        { name: 'Activated', count: activationRate, dropOff: 0, avgTime: 'N/A' }
       ]
     };
   }, [clients]);
 
   const failingSteps = useMemo(() => {
-    // Extract failing steps from actual client tasks if possible, 
-    // or return empty for now since we are stripping mock data
-    return [];
+    const stepCounts: Record<string, { total: number; failed: number }> = {};
+
+    clients.forEach(client => {
+      (client.tasks || []).forEach((task: any) => {
+        if (!stepCounts[task.title]) {
+          stepCounts[task.title] = { total: 0, failed: 0 };
+        }
+        stepCounts[task.title].total++;
+        if (!task.completed) {
+          stepCounts[task.title].failed++;
+        }
+      });
+    });
+
+    return Object.entries(stepCounts)
+      .map(([name, data]) => ({
+        name,
+        failRate: Math.round((data.failed / data.total) * 100),
+        trend: 'up' as const, // Placeholder for trend
+        affectedClients: data.failed
+      }))
+      .filter(s => s.failRate > 10) // Only report steps with >10% failure
+      .sort((a, b) => b.failRate - a.failRate)
+      .slice(0, 3);
   }, [clients]);
 
   const getStatusIcon = (status: string) => {

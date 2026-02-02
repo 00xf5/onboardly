@@ -54,18 +54,71 @@ export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsA
     ), [tasks, debouncedQuery]);
 
     const toggleTask = async (clientId: string, taskId: number | string, completed: boolean) => {
-        const { doc, getDoc, updateDoc } = await import("firebase/firestore");
+        const { doc, getDoc, updateDoc, addDoc, collection } = await import("firebase/firestore");
         const { db } = await import("@/lib/firebase");
 
         const clientRef = doc(db, "clients", clientId);
         const clientSnap = await getDoc(clientRef);
         if (clientSnap.exists()) {
             const clientData = clientSnap.data();
+            const targetTask = clientData.tasks.find((t: any) => t.id === taskId);
             const newTasks = clientData.tasks.map((t: any) =>
                 t.id === taskId ? { ...t, completed: !completed } : t
             );
             const progress = (newTasks.filter((t: any) => t.completed).length / newTasks.length) * 100;
-            await updateDoc(clientRef, { tasks: newTasks, progress });
+
+            await updateDoc(clientRef, {
+                tasks: newTasks,
+                progress,
+                lastActivity: !completed ? "Task finished by admin" : "Task reopened by admin"
+            });
+
+            // Update events
+            if (clientData.userId) {
+                await addDoc(collection(db, "events"), {
+                    userId: clientData.userId,
+                    type: !completed ? "completion" : "regression",
+                    name: !completed ? "task_completed" : "task_reopened",
+                    title: "Admin Override",
+                    description: `Admin updated "${targetTask?.title}" for ${clientData.name}`,
+                    timestamp: new Date().toISOString(),
+                    clientId: clientId
+                });
+
+                // Trigger Relay
+                if (!completed) {
+                    try {
+                        const { triggerRelay } = await import("@/lib/relay");
+                        const userDoc = await getDoc(doc(db, "users", clientData.userId));
+                        const webhookUrl = userDoc.exists() ? userDoc.data().webhookUrl : null;
+
+                        await triggerRelay({
+                            event: 'task_completed',
+                            userId: clientData.userId,
+                            webhookUrl: webhookUrl,
+                            payload: {
+                                clientName: clientData.name,
+                                clientEmail: clientData.email,
+                                taskTitle: targetTask?.title,
+                                progress: Math.round(progress),
+                                clientId: clientId
+                            }
+                        });
+
+                        // Log transmission
+                        await addDoc(collection(db, "transmissions"), {
+                            userId: clientData.userId,
+                            client: clientData.name,
+                            template: `Task: ${targetTask?.title}`,
+                            status: "delivered",
+                            sentAt: new Date().toISOString()
+                        });
+                    } catch (e) {
+                        console.error("Relay failed:", e);
+                    }
+                }
+            }
+
             toast.success("Task status updated");
         }
     };

@@ -10,10 +10,25 @@ interface WebhooksViewProps {
 const WebhooksView = ({ clients = [] }: WebhooksViewProps) => {
   const [webhookUrl, setWebhookUrl] = useState(() => localStorage.getItem('onboardly_webhook_url') || '');
 
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUrlChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setWebhookUrl(val);
     localStorage.setItem('onboardly_webhook_url', val);
+
+    // Persist to Firestore for relay accessibility
+    const userStr = localStorage.getItem('onboardly_user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      try {
+        const { doc, updateDoc } = await import("firebase/firestore");
+        const { db } = await import("@/lib/firebase");
+        const userRef = doc(db, "users", user.id);
+        await updateDoc(userRef, { webhookUrl: val });
+        toast.success("Webhook Nexus Updated");
+      } catch (error) {
+        console.error("Failed to sync webhook:", error);
+      }
+    }
   };
 
   const handleExport = () => {

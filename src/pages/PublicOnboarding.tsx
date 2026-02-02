@@ -71,13 +71,14 @@ const PublicOnboarding = () => {
         setTasks(newTasks);
 
         if (id) {
-            const { collection, query, where, getDocs, updateDoc, doc, addDoc } = await import("firebase/firestore");
+            const { collection, query, where, getDocs, updateDoc, doc, addDoc, getDoc } = await import("firebase/firestore");
             const { db } = await import("@/lib/firebase");
             const q = query(collection(db, "clients"), where("slug", "==", id));
             const snap = await getDocs(q);
 
             if (!snap.empty) {
                 const clientDoc = snap.docs[0];
+                const clientData = clientDoc.data();
                 const newProgress = (newTasks.filter(t => t.completed).length / newTasks.length) * 100;
 
                 await updateDoc(doc(db, "clients", clientDoc.id), {
@@ -87,14 +88,51 @@ const PublicOnboarding = () => {
                 });
 
                 if (clientOwnerId) {
+                    // Update events feed
                     await addDoc(collection(db, "events"), {
                         userId: clientOwnerId,
                         type: !targetTask?.completed ? "completion" : "regression",
+                        name: !targetTask?.completed ? "task_completed" : "task_reopened",
                         title: !targetTask?.completed ? "Task Accomplished" : "Task Reopened",
                         description: `${formData.name} ${!targetTask?.completed ? 'completed' : 'reverted'} "${targetTask?.title}"`,
                         timestamp: new Date().toISOString(),
                         clientId: clientDoc.id
                     });
+
+                    // Trigger Automated Relay (Emails & Webhooks)
+                    if (!targetTask?.completed) {
+                        try {
+                            const { triggerRelay } = await import("@/lib/relay");
+
+                            // Fetch owner's webhook URL
+                            const userDoc = await getDoc(doc(db, "users", clientOwnerId));
+                            const webhookUrl = userDoc.exists() ? userDoc.data().webhookUrl : null;
+
+                            await triggerRelay({
+                                event: 'task_completed',
+                                userId: clientOwnerId,
+                                webhookUrl: webhookUrl,
+                                payload: {
+                                    clientName: formData.name,
+                                    clientEmail: formData.email,
+                                    taskTitle: targetTask?.title,
+                                    progress: Math.round(newProgress),
+                                    clientId: clientDoc.id
+                                }
+                            });
+
+                            // Log transmission for dashboard feed
+                            await addDoc(collection(db, "transmissions"), {
+                                userId: clientOwnerId,
+                                client: formData.name,
+                                template: `Task: ${targetTask?.title}`,
+                                status: "delivered",
+                                sentAt: new Date().toISOString()
+                            });
+                        } catch (relayError) {
+                            console.error("Relay initiation failed:", relayError);
+                        }
+                    }
                 }
             }
         }
