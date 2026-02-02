@@ -44,24 +44,29 @@ const FlowTemplatesView = ({ user }: { user: any }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Flow Templates</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-10 animate-in fade-in duration-500">
+      <h2 className="text-sm font-black text-foreground uppercase tracking-widest mb-6">Inbound Sequence Blueprints</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {templates.map((template) => (
-          <div key={template.id} className="bg-white/5 p-6 rounded-lg flex items-start space-x-4">
-            <div className="bg-white/10 p-3 rounded-lg">
-              {getTemplateIcon(template.title)}
+          <div key={template.id} className="bg-card/95 dark:bg-card/40 backdrop-blur-xl p-8 rounded-2xl border border-border flex flex-col hover:border-accent/40 transition-all duration-300 group shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 blur-3xl rounded-full -mr-16 -mt-16 pointer-events-none" />
+
+            <div className="flex items-start gap-5 mb-6">
+              <div className="bg-muted p-4 rounded-2xl group-hover:bg-accent/10 transition-colors shadow-sm">
+                {getTemplateIcon(template.title)}
+              </div>
+              <div className="flex-1 pt-1">
+                <h3 className="text-sm font-black text-foreground uppercase tracking-tight group-hover:text-accent transition-colors">{template.title}</h3>
+                <p className="text-[11px] text-muted-foreground/50 mt-1 font-medium leading-relaxed italic">{template.description}</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-white">{template.title}</h3>
-              <p className="text-sm text-white/50">{template.description}</p>
-              <button
-                className="mt-4 bg-accent text-white px-4 py-2 rounded-lg text-sm font-bold"
-                onClick={() => handleClone(template)}
-              >
-                Clone
-              </button>
-            </div>
+
+            <button
+              className="mt-auto w-full bg-accent text-white h-10 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-glow hover:bg-accent/90 transition-all active:scale-95"
+              onClick={() => handleClone(template)}
+            >
+              Deploy Component
+            </button>
           </div>
         ))}
       </div>

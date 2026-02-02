@@ -72,7 +72,25 @@ const Dashboard = () => {
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [newClient, setNewClient] = useState({ name: "", email: "", template: "Enterprise Nexus" });
+  const [systemConfig, setSystemConfig] = useState<any>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const syncSystemConfig = async () => {
+      const { doc, onSnapshot } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+
+      return onSnapshot(doc(db, "system", "config"), (snap) => {
+        if (snap.exists()) {
+          setSystemConfig(snap.data());
+        }
+      });
+    };
+
+    let unsub: any;
+    syncSystemConfig().then(f => unsub = f);
+    return () => unsub && unsub();
+  }, []);
 
   useEffect(() => {
     const fetchUser = () => {
@@ -252,6 +270,28 @@ const Dashboard = () => {
 
   const renderContent = () => {
     const isPremiumTab = ["Flows", "Visual Flow Editor", "Flow Templates", "Insights"].includes(activeTab);
+
+    // Map tab names to config keys
+    const tabToConfigKey: Record<string, string> = {
+      "Flows": "flows",
+      "Visual Flow Editor": "visualEditor",
+      "Flow Templates": "flowTemplates",
+      "Insights": "insights",
+      "Webhooks": "webhooks"
+    };
+
+    // Global Override Check
+    const configKey = tabToConfigKey[activeTab];
+    const isGloballyDisabled = systemConfig?.modules?.[configKey]?.enabled === false;
+
+    if (isGloballyDisabled) {
+      return (
+        <LockedFeature
+          title={`${activeTab} Offline`}
+          description={`The ${activeTab} module is temporarily undergoing maintenance or has been locked by high-level administrative command. Check back shortly.`}
+        />
+      );
+    }
 
     if (isPremiumTab && !isPro) {
       return (

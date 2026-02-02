@@ -30,37 +30,75 @@ const InsightsView = ({ user }: { user: any }) => {
 
   return (
     <TooltipProvider>
-      <div className="space-y-10">
+      <div className="space-y-10 animate-in fade-in duration-500">
         <div>
-          <h2 className="text-2xl font-bold mb-4 flex items-center">Activation Rate Trend <UiTooltip><TooltipTrigger asChild><Info className="w-4 h-4 ml-2 text-white/30" /></TooltipTrigger><TooltipContent><p>Daily activation rate over the last 7 days.</p></TooltipContent></UiTooltip></h2>
-          <div className="bg-white/5 p-4 rounded-lg h-80">
+          <h2 className="text-sm font-black text-foreground uppercase tracking-widest mb-6 flex items-center">
+            Activation Rate Trend
+            <UiTooltip>
+              <TooltipTrigger asChild>
+                <Info className="w-3.5 h-3.5 ml-2 text-muted-foreground/30 hover:text-accent transition-colors cursor-pointer" />
+              </TooltipTrigger>
+              <TooltipContent className="bg-card border-border text-foreground">
+                <p className="text-[10px] uppercase font-black tracking-widest">Daily activation rate over the last 7 days.</p>
+              </TooltipContent>
+            </UiTooltip>
+          </h2>
+          <div className="bg-card/95 dark:bg-card/40 backdrop-blur-xl p-6 rounded-2xl border border-border h-80 shadow-lg">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={activationTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <AreaChart data={activationTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#FF6B4A" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#FF6B4A" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
-                <XAxis dataKey="date" stroke="rgba(255, 255, 255, 0.3)" fontSize={12} />
-                <YAxis stroke="rgba(255, 255, 255, 0.3)" fontSize={12} />
-                <Tooltip contentStyle={{ backgroundColor: 'rgba(26, 27, 35, 0.8)', border: '1px solid rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(4px)' }} />
-                <Area type="monotone" dataKey="rate" stroke="#FF6B4A" strokeWidth={2} fillOpacity={1} fill="url(#colorRate)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-muted-foreground/5" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  stroke="currentColor"
+                  className="text-muted-foreground/30"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  dy={10}
+                />
+                <YAxis
+                  stroke="currentColor"
+                  className="text-muted-foreground/30"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  dx={-10}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '12px',
+                    fontSize: '10px',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                />
+                <Area type="monotone" dataKey="rate" stroke="hsl(var(--accent))" strokeWidth={3} fillOpacity={1} fill="url(#colorRate)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold mb-4">Actionable Recommendations</h2>
-          <div className="space-y-4">
+          <h2 className="text-sm font-black text-foreground uppercase tracking-widest mb-6">Actionable Recommendations</h2>
+          <div className="grid gap-4">
             {recommendations.map((rec, index) => (
-              <div key={index} className="bg-white/[0.02] border border-white/5 p-5 rounded-xl flex items-start space-x-4 hover:border-accent/30 transition-colors group">
-                <div className="bg-white/5 p-3 rounded-lg group-hover:bg-accent/10 transition-colors">{getImpactIcon(rec.impact)}</div>
-                <div>
-                  <h3 className="font-bold text-white group-hover:text-accent transition-colors">{rec.title}</h3>
-                  <p className="text-sm text-white/40 mt-1">{rec.description}</p>
+              <div key={index} className="bg-card/95 dark:bg-card/40 backdrop-blur-xl border border-border p-5 rounded-2xl flex items-start space-x-4 hover:border-accent/30 transition-all duration-300 group shadow-sm hover:shadow-md">
+                <div className="bg-muted p-3 rounded-xl group-hover:bg-accent/10 transition-colors">
+                  {getImpactIcon(rec.impact)}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xs font-black text-foreground uppercase tracking-tight group-hover:text-accent transition-colors">{rec.title}</h3>
+                  <p className="text-[11px] text-muted-foreground/60 mt-1 font-medium leading-relaxed">{rec.description}</p>
                 </div>
               </div>
             ))}
