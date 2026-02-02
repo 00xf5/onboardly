@@ -70,7 +70,8 @@ export const TasksView = React.memo(function TasksView({ isAddDialogOpen, setIsA
             await updateDoc(clientRef, {
                 tasks: newTasks,
                 progress,
-                lastActivity: !completed ? "Task finished by admin" : "Task reopened by admin"
+                lastActivity: !completed ? "Task finished by admin" : "Task reopened by admin",
+                lastActionAt: new Date().toISOString()
             });
 
             // Update events

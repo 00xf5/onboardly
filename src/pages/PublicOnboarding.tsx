@@ -84,7 +84,8 @@ const PublicOnboarding = () => {
                 await updateDoc(doc(db, "clients", clientDoc.id), {
                     tasks: newTasks,
                     progress: newProgress,
-                    lastActivity: targetTask?.completed ? "Reopened task" : "Completed task"
+                    lastActivity: targetTask?.completed ? "Reopened task" : "Completed task",
+                    lastActionAt: new Date().toISOString()
                 });
 
                 if (clientOwnerId) {
@@ -129,6 +130,19 @@ const PublicOnboarding = () => {
                                 status: "delivered",
                                 sentAt: new Date().toISOString()
                             });
+
+                            // Celebration Trigger
+                            if (Math.round(newProgress) === 100) {
+                                try {
+                                    const { triggerSuccessBurst } = await import("@/lib/confetti");
+                                    triggerSuccessBurst();
+                                    toast.success("Strategic Objective Reached", {
+                                        description: "All phases in the onboarding sequence have been executed successfully."
+                                    });
+                                } catch (ce) {
+                                    console.error("Celebration failed:", ce);
+                                }
+                            }
                         } catch (relayError) {
                             console.error("Relay initiation failed:", relayError);
                         }

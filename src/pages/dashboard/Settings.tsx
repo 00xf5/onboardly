@@ -182,8 +182,26 @@ export const SettingsView = () => {
                             <h2 className="text-2xl font-bold text-foreground">Settings</h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-muted-foreground/50">JS snippet</label>
-                                    <input type="text" value="<script src='...'></script>" readOnly className="w-full bg-muted p-2 rounded-lg mt-1 text-muted-foreground/50" />
+                                    <label className="block text-[10px] uppercase font-black tracking-widest text-muted-foreground/30 ml-1 mb-2 italic">Trojan Horse Widget Snippet</label>
+                                    <div className="relative group">
+                                        <textarea
+                                            readOnly
+                                            value={`<script \n  src="${window.location.origin}/widget-loader.js" \n  data-onboardly-id="YOUR_PARTNER_SLUG"\n></script>`}
+                                            className="w-full bg-muted p-4 rounded-xl text-[10px] font-mono text-accent/80 border border-border group-hover:border-accent/30 transition-all h-24"
+                                        />
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="absolute top-2 right-2 h-6 text-[8px] font-black uppercase tracking-widest bg-card/50"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(`<script src="${window.location.origin}/widget-loader.js" data-onboardly-id="YOUR_PARTNER_SLUG"></script>`);
+                                                toast.success("Snippet Copied");
+                                            }}
+                                        >
+                                            Copy
+                                        </Button>
+                                    </div>
+                                    <p className="text-[8px] text-muted-foreground/20 mt-2 font-black uppercase tracking-widest italic">Replace YOUR_PARTNER_SLUG with the target ID.</p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-muted-foreground/50">Event schema</label>

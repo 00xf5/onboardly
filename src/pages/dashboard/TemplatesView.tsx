@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { FileText, Plus, Trash2, Edit } from "lucide-react";
+import { FileText, Plus, Trash2, Edit, Sparkles, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 import { PageLoader } from "@/components/Loader";
 
@@ -12,9 +13,50 @@ export const TemplatesView = ({ user }: { user: any }) => {
     const [templates, setTemplates] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
-    const [isAddTemplateDialogOpen, setIsAddTemplateDialogOpen] = useState(false);
     const [newTemplateTitle, setNewTemplateTitle] = useState("");
     const [newTaskTitle, setNewTaskTitle] = useState("");
+    const [isAIDialogOpen, setIsAIDialogOpen] = useState(false);
+    const [aiUrl, setAiUrl] = useState("");
+    const [aiDesc, setAiDesc] = useState("");
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [isAddTemplateDialogOpen, setIsAddTemplateDialogOpen] = useState(false);
+
+    const handleAIForge = async () => {
+        if (!aiUrl) return;
+        setIsGenerating(true);
+        const tid = toast.loading("Forging AI Blueprint...");
+
+        try {
+            const response = await fetch("/api/generate-blueprint", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ url: aiUrl, description: aiDesc }),
+            });
+
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+
+            // Create new template with forged tasks
+            const { collection, addDoc } = await import("firebase/firestore");
+            const { db } = await import("@/lib/firebase");
+
+            const newDoc = await addDoc(collection(db, "templates"), {
+                title: `AI: ${aiUrl.replace(/https?:\/\//, '').split('/')[0]}`,
+                userId: user.id,
+                tasks: data.tasks.map((t: any, i: number) => ({ ...t, id: Date.now() + i })),
+                createdAt: new Date().toISOString()
+            });
+
+            toast.success("Blueprint Forged by AI", { id: tid });
+            setIsAIDialogOpen(false);
+            setAiUrl("");
+            setAiDesc("");
+        } catch (error: any) {
+            toast.error(error.message || "Forge failed", { id: tid });
+        } finally {
+            setIsGenerating(false);
+        }
+    };
 
     useEffect(() => {
         if (!user?.id) return;
@@ -98,14 +140,24 @@ export const TemplatesView = ({ user }: { user: any }) => {
             <div className="md:col-span-1 bg-card/95 dark:bg-card/40 backdrop-blur-xl p-6 rounded-2xl border border-border flex flex-col shadow-lg">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-sm font-black text-foreground uppercase tracking-widest">Master Blueprints</h2>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white"
-                        onClick={() => setIsAddTemplateDialogOpen(true)}
-                    >
-                        <Plus className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white"
+                            onClick={() => setIsAIDialogOpen(true)}
+                        >
+                            <Sparkles className="w-4 h-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-lg bg-accent/10 text-accent hover:bg-accent hover:text-white"
+                            onClick={() => setIsAddTemplateDialogOpen(true)}
+                        >
+                            <Plus className="w-4 h-4" />
+                        </Button>
+                    </div>
                 </div>
                 <div className="space-y-2 flex-1 overflow-y-auto">
                     {templates.map(template => (
@@ -184,6 +236,58 @@ export const TemplatesView = ({ user }: { user: any }) => {
                     </div>
                     <DialogFooter>
                         <Button onClick={handleAddTemplate} className="w-full h-11 bg-accent text-white font-black uppercase text-[10px] tracking-widest rounded-xl shadow-glow">Create Master Registry</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isAIDialogOpen} onOpenChange={setIsAIDialogOpen}>
+                <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground rounded-2xl shadow-2xl backdrop-blur-3xl p-6">
+                    <DialogHeader className="mb-6">
+                        <DialogTitle className="text-xl font-black uppercase italic tracking-tight flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-orange-500" />
+                            AI Blueprint Forge
+                        </DialogTitle>
+                        <DialogDescription className="text-[10px] text-muted-foreground/40 uppercase font-black tracking-widest">
+                            Analyze external architecture to generate sequence logic
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 mb-8">
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 ml-1 flex items-center gap-2">
+                                <Globe className="w-3 h-3" /> Target URL
+                            </Label>
+                            <Input
+                                value={aiUrl}
+                                onChange={(e) => setAiUrl(e.target.value)}
+                                className="bg-muted h-11 text-xs rounded-xl border-none"
+                                placeholder="https://your-product.com"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 ml-1">Contextual Parameters (Optional)</Label>
+                            <Textarea
+                                value={aiDesc}
+                                onChange={(e) => setAiDesc(e.target.value)}
+                                className="bg-muted min-h-[100px] text-xs rounded-xl border-none resize-none"
+                                placeholder="Describe your product core value proposition..."
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            onClick={handleAIForge}
+                            disabled={isGenerating || !aiUrl}
+                            className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[10px] tracking-widest rounded-xl shadow-glow gap-2"
+                        >
+                            {isGenerating ? (
+                                <span className="animate-pulse">Forging Sequence...</span>
+                            ) : (
+                                <>
+                                    <Sparkles className="w-4 h-4" />
+                                    Initialize AI Generation
+                                </>
+                            )}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

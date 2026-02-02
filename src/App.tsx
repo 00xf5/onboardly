@@ -19,6 +19,7 @@ const Privacy = React.lazy(() => import("./pages/Privacy"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 const AdminLogin = React.lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = React.lazy(() => import("./pages/admin/AdminDashboard"));
+const WidgetView = React.lazy(() => import("./pages/WidgetView"));
 
 import { PageLoader } from "./components/Loader";
 
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/dashboard/:tab" element={<Dashboard />} />
               <Route path="/onboard/:id" element={<PublicOnboarding />} />
+              <Route path="/widget/:id" element={<WidgetView />} />
               <Route path="/about" element={<AboutUs />} />
               <Route path="/features" element={<Features />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
