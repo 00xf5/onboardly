@@ -54,6 +54,7 @@ import ActivationPulse from './dashboard/ActivationPulse';
 import UserSegments from './dashboard/UserSegments';
 import FlowsView from './dashboard/FlowsView';
 import ExperimentsView from './dashboard/ExperimentsView';
+import OverlayBuilderView from './dashboard/OverlayBuilderView';
 import ClientManageDialog from '@/components/dialogs/ClientManageDialog';
 
 import { PageLoader } from "@/components/Loader";
@@ -310,7 +311,8 @@ const Dashboard = () => {
       "Flow Templates": "flowTemplates",
       "Insights": "insights",
       "Webhooks": "webhooks",
-      "A/B Testing": "experiments"
+      "A/B Testing": "experiments",
+      "Overlay Builder": "overlays"
     };
 
     // Global Override Check
@@ -388,6 +390,8 @@ const Dashboard = () => {
         return <WebhooksView clients={clients} />;
       case "A/B Testing":
         return <ExperimentsView user={user} />;
+      case "Overlay Builder":
+        return <OverlayBuilderView user={user} />;
       default:
         return <PlaceholderView title={activeTab} onReset={() => navigate("/dashboard")} />;
     }

@@ -14,6 +14,7 @@ export const navItems = [
     { icon: Zap, label: "Insights", path: "/dashboard/insights" },
     { icon: Zap, label: "Webhooks", path: "/dashboard/webhooks" },
     { icon: FileText, label: "A/B Testing", path: "/dashboard/experiments" },
+    { icon: Zap, label: "Overlay Builder", path: "/dashboard/overlays" },
 ];
 
 
