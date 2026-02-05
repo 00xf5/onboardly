@@ -1,19 +1,22 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import HeroCarousel from "./HeroCarousel";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
-      <div className="container mx-auto px-6">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <HeroCarousel />
+
+      <div className="container mx-auto px-6 relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Side - Message */}
           <div className="max-w-2xl">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight tracking-tight">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
               Stop watching your users <span className="text-accent underline decoration-accent/20">ghost you</span> after signup.
             </h1>
 
-            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-xl text-white/90 mb-8 leading-relaxed">
               Most users never reach your "Aha!" moment. Onboardly drags them back, activates them, and proves it with numbers.
             </p>
 
@@ -25,7 +28,7 @@ const Hero = () => {
                 </Button>
               </Link>
               <Link to="/login">
-                <Button variant="outline" size="lg" className="text-base px-8 py-3 min-w-[160px]">
+                <Button variant="outline" size="lg" className="text-base px-8 py-3 min-w-[160px] text-white border-white hover:bg-white/10">
                   View Demo
                 </Button>
               </Link>
@@ -34,7 +37,7 @@ const Hero = () => {
 
           {/* Right Side - Dashboard Mock */}
           <div className="relative">
-            <div className="bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+            <div className="bg-card/90 backdrop-blur-sm border border-border rounded-xl shadow-2xl overflow-hidden">
               {/* Browser Header */}
               <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/20">
                 <div className="flex items-center gap-1.5">
