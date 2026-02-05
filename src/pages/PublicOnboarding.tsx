@@ -40,14 +40,66 @@ const PublicOnboarding = () => {
             return;
         }
 
-        const fetchClient = async () => {
-            const { collection, query, where, getDocs } = await import("firebase/firestore");
+        const fetchClientAndAssignVariant = async () => {
+            const { collection, query, where, getDocs, doc, updateDoc, getDoc } = await import("firebase/firestore");
             const { db } = await import("@/lib/firebase");
+
+            // 1. Fetch Client
             const q = query(collection(db, "clients"), where("slug", "==", id));
             const snap = await getDocs(q);
 
             if (!snap.empty) {
-                const found = snap.docs[0].data();
+                const clientDoc = snap.docs[0];
+                let found = clientDoc.data();
+
+                // 2. Multi-Variant Intelligence Check
+                // If variant not assigned, check for active experiments on the base template
+                if (!found.variant && found.userId) {
+                    const expQuery = query(
+                        collection(db, "experiments"),
+                        where("userId", "==", found.userId),
+                        where("baseTemplate", "==", found.template),
+                        where("status", "==", "active")
+                    );
+                    const expSnap = await getDocs(expQuery);
+
+                    if (!expSnap.empty) {
+                        const experiment = expSnap.docs[0].data();
+                        const experimentId = expSnap.docs[0].id;
+                        const assignedVariant = Math.random() < 0.5 ? 'A' : 'B';
+                        const variantTemplateTitle = assignedVariant === 'A' ? experiment.variantA : experiment.variantB;
+
+                        // Fetch the Variant's Template to override the default sequence
+                        const tempQuery = query(
+                            collection(db, "templates"),
+                            where("userId", "==", found.userId),
+                            where("title", "==", variantTemplateTitle)
+                        );
+                        const tempSnap = await getDocs(tempQuery);
+
+                        if (!tempSnap.empty) {
+                            const variantTemplate = tempSnap.docs[0].data();
+                            const variantTasks = (variantTemplate.tasks || []).map((t: any) => ({
+                                ...t,
+                                completed: false,
+                                id: t.id || Math.random().toString(36).substring(2, 9)
+                            }));
+
+                            // Finalize Selection & Persist to Nexus Registry
+                            await updateDoc(doc(db, "clients", clientDoc.id), {
+                                experimentId: experimentId,
+                                variant: assignedVariant,
+                                variantTemplate: variantTemplateTitle,
+                                tasks: variantTasks,
+                                lastActionAt: new Date().toISOString()
+                            });
+
+                            found = { ...found, tasks: variantTasks, variant: assignedVariant };
+                            console.log(`[AB-TEST] Assigned Variant ${assignedVariant}: ${variantTemplateTitle}`);
+                        }
+                    }
+                }
+
                 setFormData({ name: found.name, company: found.company || "", email: found.email });
                 setTasks(found.tasks && found.tasks.length ? found.tasks : tasks);
                 setClientOwnerId(found.userId || null);
@@ -56,7 +108,7 @@ const PublicOnboarding = () => {
             setLoading(false);
         };
 
-        fetchClient();
+        fetchClientAndAssignVariant();
     }, [id]);
 
     const handleFormSubmit = async (e: React.FormEvent) => {

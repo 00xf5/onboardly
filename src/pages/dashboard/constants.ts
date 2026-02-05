@@ -13,6 +13,7 @@ export const navItems = [
     { icon: Zap, label: "Visual Flow Editor", path: "/dashboard/visual-flow-editor" },
     { icon: Zap, label: "Insights", path: "/dashboard/insights" },
     { icon: Zap, label: "Webhooks", path: "/dashboard/webhooks" },
+    { icon: FileText, label: "A/B Testing", path: "/dashboard/experiments" },
 ];
 
 

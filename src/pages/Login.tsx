@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,35 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [trustToken, setTrustToken] = useState<string | null>(null);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Load Sentinel Script
+    const script = document.createElement("script");
+    script.src = "https://sentinel.risksignal.name.ng/widget.js";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    // Event Listener for Sentinel Success
+    const handleSentinelSuccess = (event: any) => {
+      const { trust_token } = event.detail;
+      console.log('Verified!', trust_token);
+      setTrustToken(trust_token);
+      setIsVerified(true);
+      toast.success("Identity verified successfully");
+    };
+
+    document.addEventListener('sentinelSuccess', handleSentinelSuccess);
+
+    return () => {
+      document.body.removeChild(script);
+      document.removeEventListener('sentinelSuccess', handleSentinelSuccess);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,14 +167,25 @@ const Login = () => {
               </div>
             </div>
 
+            {/* Sentinel Widget Target */}
+            <div
+              id="sentinel-widget"
+              data-sitekey="sl_05a5bb0835cc8b64257cb5d9096386cf836c7dbc088b3b18"
+              className="min-h-[60px] flex items-center justify-center transition-all my-6"
+            ></div>
+
             <Button
+              id="submit-btn"
               type="submit"
               variant="accent"
-              className="w-full"
+              className="w-full relative overflow-hidden group"
               size="lg"
-              disabled={isLoading}
+              disabled={isLoading || !isVerified}
             >
-              {isLoading ? "Synchronizing Identity..." : "Sign In"}
+              <div className={`absolute inset-0 bg-white/10 transition-transform duration-500 ${isVerified ? 'translate-x-[100%]' : 'translate-x-0'}`} />
+              <span className="relative z-10">
+                {isLoading ? "Synchronizing Identity..." : isVerified ? "Sign In" : "Complete Verification"}
+              </span>
             </Button>
           </form>
 

@@ -53,6 +53,7 @@ import Notifications from '@/components/dashboard/Notifications';
 import ActivationPulse from './dashboard/ActivationPulse';
 import UserSegments from './dashboard/UserSegments';
 import FlowsView from './dashboard/FlowsView';
+import ExperimentsView from './dashboard/ExperimentsView';
 import ClientManageDialog from '@/components/dialogs/ClientManageDialog';
 
 import { PageLoader } from "@/components/Loader";
@@ -300,7 +301,7 @@ const Dashboard = () => {
   const isPro = useMemo(() => user?.plan === 'pro', [user]);
 
   const renderContent = () => {
-    const isPremiumTab = ["Flows", "Visual Flow Editor", "Flow Templates", "Insights"].includes(activeTab);
+    const isPremiumTab = ["Flows", "Visual Flow Editor", "Flow Templates"].includes(activeTab);
 
     // Map tab names to config keys
     const tabToConfigKey: Record<string, string> = {
@@ -308,7 +309,8 @@ const Dashboard = () => {
       "Visual Flow Editor": "visualEditor",
       "Flow Templates": "flowTemplates",
       "Insights": "insights",
-      "Webhooks": "webhooks"
+      "Webhooks": "webhooks",
+      "A/B Testing": "experiments"
     };
 
     // Global Override Check
@@ -384,6 +386,8 @@ const Dashboard = () => {
         return <InsightsView user={user} />;
       case "Webhooks":
         return <WebhooksView clients={clients} />;
+      case "A/B Testing":
+        return <ExperimentsView user={user} />;
       default:
         return <PlaceholderView title={activeTab} onReset={() => navigate("/dashboard")} />;
     }
