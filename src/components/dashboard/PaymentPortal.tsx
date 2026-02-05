@@ -5,9 +5,10 @@ import { toast } from "sonner";
 
 interface PaymentPortalProps {
     onSuccess: () => void;
+    userId: string;
 }
 
-export const PaymentPortal = ({ onSuccess }: PaymentPortalProps) => {
+export const PaymentPortal = ({ onSuccess, userId }: PaymentPortalProps) => {
     const [verifying, setVerifying] = useState(false);
     const [completed, setCompleted] = useState(false);
 
@@ -29,7 +30,7 @@ export const PaymentPortal = ({ onSuccess }: PaymentPortalProps) => {
                     <div className="w-full h-[600px] bg-white/[0.01] rounded-xl border border-white/5 overflow-hidden flex items-center justify-center relative">
                         {/* NOWPayments Widget */}
                         <iframe
-                            src="https://nowpayments.io/embeds/payment-widget?iid=6136362268"
+                            src={`https://nowpayments.io/embeds/payment-widget?iid=6136362268&order_id=${userId}`}
                             width="410"
                             height="596"
                             frameBorder="0"

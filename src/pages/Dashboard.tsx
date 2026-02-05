@@ -148,6 +148,39 @@ const Dashboard = () => {
     };
   }, []);
 
+  // Real-time User Profile Synchronization (Tier/Plan Updates)
+  useEffect(() => {
+    const storedUser = localStorage.getItem('onboardly_user');
+    if (!storedUser) return;
+    const currentUser = JSON.parse(storedUser);
+
+    const syncUser = async () => {
+      const { doc, onSnapshot } = await import("firebase/firestore");
+      const { db } = await import("@/lib/firebase");
+
+      return onSnapshot(doc(db, "users", currentUser.id), (snap) => {
+        if (snap.exists()) {
+          const cloudUser = snap.data();
+          // If a plan upgrade is detected in the cloud
+          if (cloudUser.plan !== currentUser.plan) {
+            const updatedUser = { ...currentUser, ...cloudUser };
+            localStorage.setItem('onboardly_user', JSON.stringify(updatedUser));
+            setUser(updatedUser);
+            if (cloudUser.plan === 'pro') {
+              toast.success("Nexus Tier Elevated", {
+                description: "Pro features have been authorized for this session."
+              });
+            }
+          }
+        }
+      });
+    };
+
+    let unsub: any;
+    syncUser().then(f => unsub = f);
+    return () => unsub && unsub();
+  }, []);
+
   const activeTab = useMemo(() => {
     const path = location.pathname.endsWith('/') ? location.pathname.slice(0, -1) : location.pathname;
     const item = navItems.find(item => item.path === path);

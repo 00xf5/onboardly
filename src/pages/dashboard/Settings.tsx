@@ -235,7 +235,10 @@ export const SettingsView = () => {
                         <DialogDescription className="text-muted-foreground/40 text-[11px]">Authorize the crypto-relay for Pro access.</DialogDescription>
                     </DialogHeader>
                     <div className="p-6">
-                        <PaymentPortal onSuccess={onPaymentSuccess} />
+                        <PaymentPortal
+                            onSuccess={onPaymentSuccess}
+                            userId={JSON.parse(localStorage.getItem('onboardly_user') || '{}').id}
+                        />
                     </div>
                 </DialogContent>
             </Dialog>
