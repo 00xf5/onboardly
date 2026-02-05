@@ -14,7 +14,14 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<{ s
             body: JSON.stringify({ email, name }),
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.warn('Email API returned non-JSON response:', text);
+            return { success: false, error: 'Invalid API response format' };
+        }
 
         if (!response.ok) {
             throw new Error(data.error || 'Failed to send welcome email');

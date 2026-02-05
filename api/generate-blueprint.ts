@@ -10,20 +10,19 @@ export default async function handler(req: any, res: any) {
             return res.status(400).json({ error: 'URL is required' });
         }
 
-        // High-Performance Mock Blueprint (AI Logic Bypassed)
-        const tasks = [
-            { title: "Initialize Security Protocols", type: "Tech" },
-            { title: "Review Master Service Agreement", type: "Legal" },
-            { title: "Upload Brand Identity Assets", type: "Assets" },
-            { title: "Sync Neural Gateway Context", type: "Tech" },
-            { title: "Execute Final Strategy Sync", type: "Meeting" }
-        ];
-
-        /*
         const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+        
+        // If no API key, return high-performance mock data
         if (!GEMINI_API_KEY) {
-            // Fallback for demo if key isn't set, but we want perfection so we'll expect it
-            return res.status(500).json({ error: 'GEMINI_API_KEY not configured in environment.' });
+            console.warn('GEMINI_API_KEY not found, returning mock blueprint');
+            const mockTasks = [
+                { title: "Initialize Security Protocols", type: "Tech" },
+                { title: "Review Master Service Agreement", type: "Legal" },
+                { title: "Upload Brand Identity Assets", type: "Assets" },
+                { title: "Sync Neural Gateway Context", type: "Tech" },
+                { title: "Execute Final Strategy Sync", type: "Meeting" }
+            ];
+            return res.status(200).json({ success: true, tasks: mockTasks });
         }
 
         const prompt = `
@@ -60,7 +59,6 @@ export default async function handler(req: any, res: any) {
 
         const content = data.candidates[0].content.parts[0].text;
         const tasks = JSON.parse(content);
-        */
 
         return res.status(200).json({ success: true, tasks });
     } catch (error: any) {
@@ -68,3 +66,4 @@ export default async function handler(req: any, res: any) {
         return res.status(500).json({ error: error.message });
     }
 }
+

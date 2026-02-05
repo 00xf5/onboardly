@@ -16,7 +16,14 @@ export async function triggerRelay(params: {
             body: JSON.stringify(params),
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.warn('Relay API returned non-JSON response:', text);
+            return { success: false, error: 'Invalid API response format' };
+        }
 
         if (!response.ok) {
             console.warn('Relay partial failure:', data.error);
